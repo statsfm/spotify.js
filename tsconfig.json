@@ -16,7 +16,13 @@
     "noErrorTruncation": true,
     "skipLibCheck": true,
     "resolveJsonModule": true,
-    "outDir": "dist/"
+    "outDir": "dist/",
+    "paths": {
+      "@interfaces": ["./src/interfaces"],
+      "@interfaces/*": ["./src/interfaces/*"],
+      "@util": ["./src/util"],
+      "@util/*": ["./src/util/*"]
+    }
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules"]
