@@ -1,4 +1,4 @@
-import { Track } from '../../interfaces';
+import { Track } from '../../interfaces/Spotify';
 import { Manager } from '../Manager';
 
 export class TrackManager extends Manager {

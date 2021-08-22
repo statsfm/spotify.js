@@ -6,7 +6,7 @@
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
     "moduleResolution": "Node",
-    "removeComments": true,
+    "removeComments": false,
     "sourceMap": true,
     "baseUrl": "./",
     "lib": ["ES2020"],

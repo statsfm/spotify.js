@@ -1,7 +1,7 @@
 import { Album } from './Album';
 import { Artist } from './Artist';
-import { ExternalIds } from './ExternalIds';
-import { ExternalUrls } from './ExternalUrls';
+import { ExternalIds } from './shared/ExternalIds';
+import { ExternalUrls } from './shared/ExternalUrls';
 
 export interface Track {
   album: Album;

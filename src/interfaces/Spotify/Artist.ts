@@ -1,4 +1,4 @@
-import { ExternalUrls } from './ExternalUrls';
+import { ExternalUrls } from './shared/ExternalUrls';
 
 export interface Artist {
   external_urls: ExternalUrls;
