@@ -16,9 +16,11 @@ yarn add @spotistats/spotify.js
 import { SpotifyAPI } from '@spotistats/spotify.js';
 
 const api = new SpotifyAPI({
-  clientId,
-  clientSecret,
-  refreshToken,
+  clientCredentials: {
+    clientId: '',
+    clientSecret: '',
+  }
+  refreshToken: ''
 });
 
 (async () => {
