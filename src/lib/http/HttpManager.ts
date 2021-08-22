@@ -87,7 +87,7 @@ export class HttpClient {
     slug: string,
     options?: { query?: Record<string, string> } & RequestInit
   ): Promise<Response> {
-    return await this.fetch(this.getURL(slug, options.query), {
+    return await this.fetch(this.getURL(slug, options?.query), {
       method: 'GET',
       ...options
     });
@@ -97,7 +97,7 @@ export class HttpClient {
     slug: string,
     options?: { query?: Record<string, string> } & RequestInit
   ): Promise<Response> {
-    return await this.fetch(this.getURL(slug, options.query), {
+    return await this.fetch(this.getURL(slug, options?.query), {
       method: 'POST',
       ...options
     });
@@ -107,7 +107,7 @@ export class HttpClient {
     slug: string,
     options?: { query?: Record<string, string> } & RequestInit
   ): Promise<Response> {
-    return await this.fetch(this.getURL(slug, options.query), {
+    return await this.fetch(this.getURL(slug, options?.query), {
       method: 'DELETE',
       ...options
     });
@@ -117,7 +117,7 @@ export class HttpClient {
     slug: string,
     options?: { query?: Record<string, string> } & RequestInit
   ): Promise<Response> {
-    return await this.fetch(this.getURL(slug, options.query), {
+    return await this.fetch(this.getURL(slug, options?.query), {
       method: 'PUT',
       ...options
     });
