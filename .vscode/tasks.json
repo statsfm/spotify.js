@@ -1,0 +1,14 @@
+{
+  "version": "2.0.0",
+  "command": "tsc",
+  "args": ["-p", "."],
+  "presentation": {
+    "echo": true,
+    "reveal": "silent",
+    "focus": false,
+    "panel": "shared",
+    "showReuseMessage": true,
+    "clear": true
+  },
+  "problemMatcher": "$tsc"
+}
