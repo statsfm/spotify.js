@@ -73,24 +73,53 @@ export class HttpClient {
   }
 
   private async fetch(url: RequestInfo, init?: RequestInit): Promise<Response> {
-    const headers = { Authorization: `Bearer ${await this.handleAuth()}`, ...init.headers }; // add authorization header
+    const headers = {
+      Authorization: `Bearer ${await this.handleAuth()}`,
+      'Content-Type': 'application/json',
+      Accept: 'application/json',
+      ...init.headers
+    }; // add authorization, content-type and accept headers
 
     return await fetch(url, { ...init, headers });
   }
 
-  async get(slug: string, query?: Record<string, string>): Promise<Response> {
-    return await this.fetch(this.getURL(slug, query), { method: 'GET' });
+  async get(
+    slug: string,
+    options?: { query?: Record<string, string> } & RequestInit
+  ): Promise<Response> {
+    return await this.fetch(this.getURL(slug, options.query), {
+      method: 'GET',
+      ...options
+    });
   }
 
-  async post(slug: string, query?: Record<string, string>): Promise<Response> {
-    return await this.fetch(this.getURL(slug, query), { method: 'POST' });
+  async post(
+    slug: string,
+    options?: { query?: Record<string, string> } & RequestInit
+  ): Promise<Response> {
+    return await this.fetch(this.getURL(slug, options.query), {
+      method: 'POST',
+      ...options
+    });
   }
 
-  async delete(slug: string, query?: Record<string, string>): Promise<Response> {
-    return await this.fetch(this.getURL(slug, query), { method: 'DELETE' });
+  async delete(
+    slug: string,
+    options?: { query?: Record<string, string> } & RequestInit
+  ): Promise<Response> {
+    return await this.fetch(this.getURL(slug, options.query), {
+      method: 'DELETE',
+      ...options
+    });
   }
 
-  async put(slug: string, query?: Record<string, string>): Promise<Response> {
-    return await this.fetch(this.getURL(slug, query), { method: 'PUT' });
+  async put(
+    slug: string,
+    options?: { query?: Record<string, string> } & RequestInit
+  ): Promise<Response> {
+    return await this.fetch(this.getURL(slug, options.query), {
+      method: 'PUT',
+      ...options
+    });
   }
 }

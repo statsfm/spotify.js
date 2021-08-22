@@ -17,7 +17,7 @@ export class TrackManager extends Manager {
    * @param ids Array of IDs.
    */
   async list(ids: string[]): Promise<Track[]> {
-    const res = await this.http.get('/tracks', { ids: ids.join(',') });
+    const res = await this.http.get('/tracks', { query: { ids: ids.join(',') } });
 
     return (await res.json()).tracks as Track[];
   }
