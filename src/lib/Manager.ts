@@ -1,14 +1,8 @@
-import { SpotifyConfig } from 'src/interfaces/Config';
-import { URLSearchParams } from 'url';
+import { PrivateConfig, SpotifyConfig } from 'src/interfaces/Config';
+import { HttpClient } from './http/HttpManager';
 
 export class Manager {
-  protected config: SpotifyConfig;
+  protected http = new HttpClient(this.config, this.privateConfig);
 
-  constructor(config: SpotifyConfig) {
-    this.config = config;
-  }
-
-  protected getURL(slug: string, query?: Record<string, string>): string {
-    return `https://api.spotify.com/v1${slug}${new URLSearchParams(query).toString()}`;
-  }
+  constructor(protected config: SpotifyConfig, protected privateConfig: PrivateConfig) {}
 }

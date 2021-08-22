@@ -5,6 +5,6 @@ export class SpotifyAPI {
   tracks: TrackManager;
 
   constructor(config: SpotifyConfig) {
-    this.tracks = new TrackManager(config);
+    this.tracks = new TrackManager(config, {});
   }
 }
