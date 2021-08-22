@@ -1,10 +1,10 @@
-import { Album } from './Album';
+import { SimplifiedAlbum } from './Album';
 import { Artist } from './Artist';
 import { ExternalIds } from './shared/ExternalIds';
 import { ExternalUrls } from './shared/ExternalUrls';
 
 export interface Track {
-  album: Album;
+  album: SimplifiedAlbum;
   artists: Artist[];
   available_markets: string[];
   disc_number: number;

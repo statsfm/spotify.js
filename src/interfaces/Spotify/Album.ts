@@ -2,7 +2,7 @@ import { Artist } from './Artist';
 import { ExternalUrls } from './shared/ExternalUrls';
 import { Image } from './shared/Image';
 
-export interface Album {
+export interface SimplifiedAlbum {
   album_type: string;
   artists: Artist[];
   available_markets: string[];
