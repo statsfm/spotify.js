@@ -1,6 +1,8 @@
 export interface SpotifyConfig {
-  clientId?: string;
-  clientSecret?: string;
+  clientCredentials?: {
+    clientId?: string;
+    clientSecret?: string;
+  };
   acccessToken?: string;
   refreshToken?: string;
 }

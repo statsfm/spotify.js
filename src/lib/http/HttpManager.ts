@@ -16,7 +16,11 @@ export class HttpClient {
   }
 
   private async refreshToken(): Promise<string> {
-    if (!this.config.clientId || !this.config.clientSecret || !this.config.refreshToken) {
+    if (
+      !this.config.clientCredentials.clientId ||
+      !this.config.clientCredentials.clientSecret ||
+      !this.config.refreshToken
+    ) {
       throw new Error('missing information needed to refresh token');
     }
 
@@ -24,7 +28,7 @@ export class HttpClient {
       method: 'POST',
       headers: {
         authorization: `Basic ${Buffer.from(
-          `${this.config.clientId}:${this.config.clientSecret}`
+          `${this.config.clientCredentials.clientId}:${this.config.clientCredentials.clientSecret}`
         ).toString('base64')}`
       },
       body: new URLSearchParams({
@@ -56,7 +60,11 @@ export class HttpClient {
     }
 
     // refresh token
-    if (this.config.clientId && this.config.clientSecret && this.config.refreshToken) {
+    if (
+      this.config.clientCredentials.clientId &&
+      this.config.clientCredentials.clientSecret &&
+      this.config.refreshToken
+    ) {
       return await this.refreshToken(); // refresh token
     }
 
