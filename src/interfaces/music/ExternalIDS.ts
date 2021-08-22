@@ -1,3 +1,3 @@
-export interface ExternalIDS {
+export interface ExternalIds {
   isrc: string;
 }

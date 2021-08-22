@@ -1,6 +1,6 @@
 import { Album } from './Album';
 import { Artist } from './Artist';
-import { ExternalIDS } from './ExternalIds';
+import { ExternalIds } from './ExternalIds';
 import { ExternalUrls } from './ExternalUrls';
 
 export interface Track {
@@ -10,7 +10,7 @@ export interface Track {
   disc_number: number;
   duration_ms: number;
   explicit: boolean;
-  external_ids: ExternalIDS;
+  external_ids: ExternalIds;
   external_urls: ExternalUrls;
   href: string;
   id: string;
