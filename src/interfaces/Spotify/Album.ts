@@ -1,19 +1,91 @@
 import { Artist } from './Artist';
 import { ExternalUrls } from './shared/ExternalUrls';
 import { Image } from './shared/Image';
+import { Track } from './Track';
 
 export interface SimplifiedAlbum {
-  album_type: string;
+  /**
+   * The type of the album.
+   */
+  album_type: 'album' | 'single' | 'compilation';
+  /**
+   * The artists of the album.
+   */
   artists: Artist[];
+  /**
+   * The markets in which the album is available: [ISO 3166-1 alpha-2](http://en.wikipedia.org/wiki/ISO_3166-1_alpha-2) country codes.
+   * Note that an album is considered available in a market when at least 1 of its tracks is available in that market.
+   */
   available_markets: string[];
+  /**
+   * Known external URLs for this album.
+   */
   external_urls: ExternalUrls;
+  /**
+   * A link to the Web API endpoint providing full details of the album.
+   */
   href: string;
+  /**
+   * The Spotify ID for the album.
+   */
   id: string;
+  /**
+   * The cover art for the album in various sizes, widest first.
+   */
   images: Image[];
-  name: string;
+  /**
+   * The name of the album.
+   * In case of an album takedown, the value may be an empty string.
+   */
+  name?: string;
+  /**
+   * The date the album was first released.
+   */
   release_date: string;
-  release_date_precision: string;
+  /**
+   * The precision with which `release_date` value is known.
+   */
+  release_date_precision: 'year' | 'month' | 'day';
+  /**
+   * The number of tracks in the album.
+   */
   total_tracks: number;
-  type: string;
+  /**
+   * The object type.
+   */
+  type: 'album';
+  /**
+   * The Spotify URI for the album.
+   */
   uri: string;
+  /**
+   * **The field is present when getting an artist's albums.**
+   * Compare to album_type this field represents relationship between the artist and the album.
+   */
+  album_group?: 'album' | 'single' | 'compilation' | 'appears_on';
+}
+
+export interface Album extends SimplifiedAlbum {
+  /**
+   * Included in the response when a content restriction is applied.
+   */
+  restrictions?: {
+    /**
+     * The reason for the restriction.
+     * Albums may be restricted if the content is not available in a given market, to the user's subscription type, or when the user's account is set to not play explicit content.
+     */
+    reason: 'market' | 'product' | 'explicit';
+  }[];
+  /**
+   * The tracks of the album.
+   */
+  tracks: {
+    href: string;
+    items: Track[];
+    limit: number;
+    next: string;
+    offset: number;
+    previous: string;
+    total: number;
+  };
 }
