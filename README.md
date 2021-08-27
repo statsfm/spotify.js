@@ -1,6 +1,6 @@
 # spotify.js
 
-A API wrapper for Spotify, written in Typescript.
+An API wrapper for Spotify, written in Typescript.
 
 ## Features
 
