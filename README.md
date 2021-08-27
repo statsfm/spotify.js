@@ -1,6 +1,6 @@
 # spotify.js
 
-A API wrapper for Spotify, written in Typescript.
+An API wrapper for Spotify, written in Typescript.
 
 ## Features
 
@@ -9,7 +9,10 @@ A API wrapper for Spotify, written in Typescript.
 ## Usage
 
 ```bash
+# using yarn
 yarn add @spotistats/spotify.js
+# or with npm
+npm install @spotistats/spotify.js
 ```
 
 ```ts
@@ -19,27 +22,23 @@ const api = new SpotifyAPI({
   clientCredentials: {
     clientId: '',
     clientSecret: '',
-  }
+  },
   refreshToken: ''
 });
 
-(async () => {
-  try {
-    const tracks = await api.tracks.list([
-      '2cc8Sw1OnCuA5bV8nqWqpE',
-      '4a8pP5X2lxwU5aprY44jLn',
-      '5lIFsEWj9IjNEALbHnPosE',
-      '4S4RWAA749dKyJQ5CiKEBJ',
-      '4ZtFanR9U6ndgddUvNcjcG'
-    ]);
-
-    tracks.forEach((v) => {
-      console.log(`${v.name} - ${v.artists[0].name}`);
+const tracks = await api.tracks.list([
+  '2cc8Sw1OnCuA5bV8nqWqpE',
+  '4a8pP5X2lxwU5aprY44jLn',
+  '5lIFsEWj9IjNEALbHnPosE',
+  '4S4RWAA749dKyJQ5CiKEBJ',
+  '4ZtFanR9U6ndgddUvNcjcG'
+])
+  .then(tracks => {
+    tracks.forEach(track => {
+      console.log(`${track.name} - ${track.artists[0].name}`);
     });
-  } catch (err) {
-    console.log(err);
-  }
-})();
+  })
+  .catch(console.error);
 ```
 
 ## Maintainers
