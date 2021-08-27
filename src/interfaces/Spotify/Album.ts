@@ -1,17 +1,17 @@
-import { Artist } from './Artist';
+import { Artist, SimplifiedArtist } from './Artist';
 import { ExternalUrls } from './shared/ExternalUrls';
 import { Image } from './shared/Image';
 import { Track } from './Track';
 
-export interface SimplifiedAlbum {
+export interface AlbumBase {
   /**
    * The type of the album.
    */
   album_type: 'album' | 'single' | 'compilation';
   /**
-   * The artists of the album.
+   * The number of tracks in the album.
    */
-  artists: Artist[];
+  total_tracks: number;
   /**
    * The markets in which the album is available: [ISO 3166-1 alpha-2](http://en.wikipedia.org/wiki/ISO_3166-1_alpha-2) country codes.
    * Note that an album is considered available in a market when at least 1 of its tracks is available in that market.
@@ -47,26 +47,6 @@ export interface SimplifiedAlbum {
    */
   release_date_precision: 'year' | 'month' | 'day';
   /**
-   * The number of tracks in the album.
-   */
-  total_tracks: number;
-  /**
-   * The object type.
-   */
-  type: 'album';
-  /**
-   * The Spotify URI for the album.
-   */
-  uri: string;
-  /**
-   * **The field is present when getting an artist's albums.**
-   * Compare to album_type this field represents relationship between the artist and the album.
-   */
-  album_group?: 'album' | 'single' | 'compilation' | 'appears_on';
-}
-
-export interface Album extends SimplifiedAlbum {
-  /**
    * Included in the response when a content restriction is applied.
    */
   restrictions?: {
@@ -75,7 +55,34 @@ export interface Album extends SimplifiedAlbum {
      * Albums may be restricted if the content is not available in a given market, to the user's subscription type, or when the user's account is set to not play explicit content.
      */
     reason: 'market' | 'product' | 'explicit';
-  }[];
+  };
+  /**
+   * The object type.
+   */
+  type: 'album';
+  /**
+   * The Spotify URI for the album.
+   */
+  uri: string;
+}
+
+export interface SimplifiedAlbum extends AlbumBase {
+  /**
+   * **The field is present when getting an artist's albums.**
+   * Compare to album_type this field represents relationship between the artist and the album.
+   */
+  album_group?: 'album' | 'single' | 'compilation' | 'appears_on';
+  /**
+   * The artists of the album.
+   */
+  artists: SimplifiedArtist[];
+}
+
+export interface Album extends AlbumBase {
+  /**
+   * The artists of the album.
+   */
+  artists: Artist[];
   /**
    * The tracks of the album.
    */
