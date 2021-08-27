@@ -5,3 +5,5 @@ export * from './shared';
 export * from './User';
 export * from './RecentlyPlayed';
 export * from './TopOptions';
+export * from './Search';
+export * from './SearchOptions';
