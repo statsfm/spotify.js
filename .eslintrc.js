@@ -6,5 +6,10 @@ module.exports = {
   },
   plugins: ['@typescript-eslint', 'prettier'],
   extends: ['@tribecamp/base', '@tribecamp/typescript', 'prettier'],
-  rules: { 'prettier/prettier': 'error', camelcase: 'off' }
+  rules: {
+    'prettier/prettier': 'error',
+    camelcase: 'off',
+    'no-param-reassign': 'off',
+    'jsdoc/require-param': 'off'
+  }
 };
