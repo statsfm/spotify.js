@@ -1,4 +1,4 @@
-import { PublicUser } from '../../interfaces/Spotify/User';
+import { PublicUser } from '../../interfaces/Spotify';
 import { Manager } from '../Manager';
 
 export class UserManager extends Manager {
