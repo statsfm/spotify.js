@@ -3,6 +3,10 @@
   "version": "1.0.0",
   "description": "Node wrapper for Spotify, written in TS.",
   "main": "dist/index.js",
+  "private": false,
+  "publishConfig": {
+    "access": "public"
+  },
   "repository": "https://github.com/spotistatsapp/spotify.js",
   "author": "Sting Alleman <stingalleman@icloud.com>",
   "license": "GPL-3.0",

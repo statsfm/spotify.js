@@ -1,0 +1,8 @@
+src
+.eslintignore
+.eslintrc.js
+.git*
+.prettier*
+.vscode
+node_modules
+test.mjs
