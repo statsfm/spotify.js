@@ -9,8 +9,8 @@ export class HttpClient {
 
   /**
    * @param {string} slug
-   * @param {string} query?
-   * @returns {string} Returns the full url
+   * @param {string} query
+   * @returns {string} Returns the full url.
    */
   protected getURL(slug: string, query?: Record<string, string>): string {
     const url = new URL(this.baseURL);
@@ -20,10 +20,9 @@ export class HttpClient {
     return url.toString();
   }
 
-  
   /**
-   * @description Get a refresh token
-   * @returns {string} Returns the refresh token
+   * @description Get a refresh token.
+   * @returns {string} Returns the refresh token.
    */
   private async refreshToken(): Promise<string> {
     if (
@@ -59,8 +58,8 @@ export class HttpClient {
   }
 
   /**
-   * @description Handles the auth tokens
-   * @returns {string} Returns a auth token
+   * @description Handles the auth tokens.
+   * @returns {string} Returns a auth token.
    */
   private async handleAuth(): Promise<string> {
     if (this.config.acccessToken) {
@@ -87,10 +86,10 @@ export class HttpClient {
   }
 
   /**
-   * @description Fetches the url
-   * @param  {RequestInfo} url The url to fetch
-   * @param  {RequestInit} init? Options
-   * @returns {Promise<Response>} Returns a promise with the response
+   * @description Fetches the url.
+   * @param  {RequestInfo} url The url to fetch.
+   * @param  {RequestInit} init Options.
+   * @returns {Promise<Response>} Returns a promise with the response.
    */
   private async fetch(url: RequestInfo, init?: RequestInit): Promise<Response> {
     const headers = {
@@ -104,9 +103,9 @@ export class HttpClient {
   }
 
   /**
-   * @param {string} slug The slug to get
-   * @param {Record<string, string> & RequestInit} options? Options
-   * @returns {Promise<Response>} Returns a promise with the response
+   * @param {string} slug The slug to get.
+   * @param {Record<string, string> & RequestInit} options Options.
+   * @returns {Promise<Response>} Returns a promise with the response.
    */
   async get(
     slug: string,
@@ -119,9 +118,9 @@ export class HttpClient {
   }
 
   /**
-   * @param {string} slug The slug to post
-   * @param {Record<string, string> & RequestInit} options? Options
-   * @returns {Promise<Response>} Returns a promise with the response
+   * @param {string} slug The slug to post.
+   * @param {Record<string, string> & RequestInit} options Options.
+   * @returns {Promise<Response>} Returns a promise with the response.
    */
   async post(
     slug: string,
@@ -134,9 +133,9 @@ export class HttpClient {
   }
 
   /**
-   * @param {string} slug The slug to delete
-   * @param {Record<string, string> & RequestInit} options? Options
-   * @returns {Promise<Response>} Returns a promise with the response
+   * @param {string} slug The slug to delete.
+   * @param {Record<string, string> & RequestInit} options Options.
+   * @returns {Promise<Response>} Returns a promise with the response.
    */
   async delete(
     slug: string,
@@ -149,9 +148,9 @@ export class HttpClient {
   }
 
   /**
-   * @param {string} slug The slug to update
-   * @param {Record<string, string> & RequestInit} options? Options
-   * @returns {Promise<Response>} Returns a promise with the response
+   * @param {string} slug The slug to update.
+   * @param {Record<string, string> & RequestInit} options Options.
+   * @returns {Promise<Response>} Returns a promise with the response.
    */
   async put(
     slug: string,
