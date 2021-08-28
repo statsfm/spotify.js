@@ -3,7 +3,10 @@ import { Manager } from '../Manager';
 
 export class SearchManager extends Manager {
   /**
-   * Search the Spotify catalog for anything that matches the searchQuery.
+   * @description Search the Spotify catalog for anything that matches the searchQuery.
+   * @param  {string} searchQuery The query you want to search for
+   * @param  {SearchOptions} options? The search options
+   * @returns {Promise<SearchItems>} Returns a promise with all the {@link SearchItems}
    */
   async get(searchQuery: string, options?: SearchOptions): Promise<SearchItems> {
     let types: string[];

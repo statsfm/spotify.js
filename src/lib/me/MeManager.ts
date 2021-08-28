@@ -12,13 +12,26 @@ import { Manager } from '../Manager';
 
 export class MeManager extends Manager {
   /**
-   * Get current user's top artists or tracks.
-   * **Required scope**: user-top-read.
+   * @description Get current user's top artists.
+   * @param {string} type
+   * @param {TopOptions} options?
+   * @returns {Promise<PagingObject<Artist>>} Returns a promise with the paginated {@link Artist}.
    */
   async top(type: 'artists', options?: TopOptions): Promise<PagingObject<Artist>>;
 
+  /**
+   * @description Get current user's top tracks.
+   * @param {string} type
+   * @param {TopOptions} options?
+   * @returns {Promise<PagingObject<Track>>} Returns a promise with the paginated {@link Track}.
+   */
   async top(type: 'tracks', options?: TopOptions): Promise<PagingObject<Track>>;
-
+  
+  /**
+   * @description Get the current user's top tracks or artists.
+   * @param  {string} type
+   * @param  {TopOptions} options?
+   */
   async top(type: 'artists' | 'tracks', options?: TopOptions): Promise<unknown> {
     const res = await this.http.get(`/me/top/${type}`, {
       query: {
@@ -32,8 +45,8 @@ export class MeManager extends Manager {
   }
 
   /**
-   * Get current user's (private) data.
-   * **Required scopes**: user-read-private, user-read-email.
+   * @description Get current user's (private) data. (required scropes: user-read-private, user-read-email)
+   * @returns {Promise<PrivateUser>}
    */
   async get(): Promise<PrivateUser> {
     const res = await this.http.get('/me');
@@ -42,8 +55,9 @@ export class MeManager extends Manager {
   }
 
   /**
-   * Get current user's recently played tracks.
-   * **Required scope**: user-read-recently-played.
+   * @description Get current user's recently played tracks. (required scoped: user-read-recently-played)
+   * @param {limit?:number after?:number;before?:number} options?
+   * @returns {Promise<CursorPagingObject<RecentlyPlayed>>} Returns a promise with the {@link RecentlyPlayed} items
    */
   async recentlyPlayed(options?: {
     limit?: number;
