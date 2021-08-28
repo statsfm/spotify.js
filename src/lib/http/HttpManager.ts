@@ -7,6 +7,11 @@ export class HttpClient {
 
   constructor(protected config: SpotifyConfig, protected privateConfig: PrivateConfig) {}
 
+  /**
+   * @param {string} slug
+   * @param {string} query?
+   * @returns {string} Returns the full url
+   */
   protected getURL(slug: string, query?: Record<string, string>): string {
     const url = new URL(this.baseURL);
     url.pathname += slug;
@@ -15,6 +20,11 @@ export class HttpClient {
     return url.toString();
   }
 
+  
+  /**
+   * @description Get a refresh token
+   * @returns {string} Returns the refresh token
+   */
   private async refreshToken(): Promise<string> {
     if (
       !this.config.clientCredentials.clientId ||
@@ -48,6 +58,10 @@ export class HttpClient {
     return this.config.acccessToken; // return token
   }
 
+  /**
+   * @description Handles the auth tokens
+   * @returns {string} Returns a auth token
+   */
   private async handleAuth(): Promise<string> {
     if (this.config.acccessToken) {
       // check if token is expired
@@ -72,6 +86,12 @@ export class HttpClient {
     throw new Error('auth error');
   }
 
+  /**
+   * @description Fetches the url
+   * @param  {RequestInfo} url The url to fetch
+   * @param  {RequestInit} init? Options
+   * @returns {Promise<Response>} Returns a promise with the response
+   */
   private async fetch(url: RequestInfo, init?: RequestInit): Promise<Response> {
     const headers = {
       Authorization: `Bearer ${await this.handleAuth()}`,
@@ -83,6 +103,11 @@ export class HttpClient {
     return await fetch(url, { ...init, headers });
   }
 
+  /**
+   * @param {string} slug The slug to get
+   * @param {Record<string, string> & RequestInit} options? Options
+   * @returns {Promise<Response>} Returns a promise with the response
+   */
   async get(
     slug: string,
     options?: { query?: Record<string, string> } & RequestInit
@@ -93,6 +118,11 @@ export class HttpClient {
     });
   }
 
+  /**
+   * @param {string} slug The slug to post
+   * @param {Record<string, string> & RequestInit} options? Options
+   * @returns {Promise<Response>} Returns a promise with the response
+   */
   async post(
     slug: string,
     options?: { query?: Record<string, string> } & RequestInit
@@ -103,6 +133,11 @@ export class HttpClient {
     });
   }
 
+  /**
+   * @param {string} slug The slug to delete
+   * @param {Record<string, string> & RequestInit} options? Options
+   * @returns {Promise<Response>} Returns a promise with the response
+   */
   async delete(
     slug: string,
     options?: { query?: Record<string, string> } & RequestInit
@@ -113,6 +148,11 @@ export class HttpClient {
     });
   }
 
+  /**
+   * @param {string} slug The slug to update
+   * @param {Record<string, string> & RequestInit} options? Options
+   * @returns {Promise<Response>} Returns a promise with the response
+   */
   async put(
     slug: string,
     options?: { query?: Record<string, string> } & RequestInit
