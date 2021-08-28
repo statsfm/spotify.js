@@ -23,18 +23,19 @@ const api = new SpotifyAPI({
     clientId: '',
     clientSecret: '',
   },
-  refreshToken: ''
+  refreshToken: '',
 });
 
-const tracks = await api.tracks.list([
-  '2cc8Sw1OnCuA5bV8nqWqpE',
-  '4a8pP5X2lxwU5aprY44jLn',
-  '5lIFsEWj9IjNEALbHnPosE',
-  '4S4RWAA749dKyJQ5CiKEBJ',
-  '4ZtFanR9U6ndgddUvNcjcG'
-])
-  .then(tracks => {
-    tracks.forEach(track => {
+const tracks = await api.tracks
+  .list([
+    '2cc8Sw1OnCuA5bV8nqWqpE',
+    '4a8pP5X2lxwU5aprY44jLn',
+    '5lIFsEWj9IjNEALbHnPosE',
+    '4S4RWAA749dKyJQ5CiKEBJ',
+    '4ZtFanR9U6ndgddUvNcjcG',
+  ])
+  .then((tracks) => {
+    tracks.forEach((track) => {
       console.log(`${track.name} - ${track.artists[0].name}`);
     });
   })
