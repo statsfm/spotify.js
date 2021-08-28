@@ -1,5 +1,5 @@
 import { SimplifiedAlbum } from './Album';
-import { Artist, SimplifiedArtist } from './Artist';
+import { SimplifiedArtist } from './Artist';
 import { ExternalIds } from './shared/ExternalIds';
 import { ExternalUrls } from './shared/ExternalUrls';
 
@@ -11,7 +11,7 @@ export interface Track {
   /**
    * The artists who performed the track.
    */
-  artists: Artist[];
+  artists: SimplifiedArtist[];
   /**
    * The markets in which the album is available: [ISO 3166-1 alpha-2](http://en.wikipedia.org/wiki/ISO_3166-1_alpha-2) country codes.
    * Note that an album is considered available in a market when at least 1 of its tracks is available in that market.
