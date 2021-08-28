@@ -1,5 +1,12 @@
 import fetch, { RequestInfo, RequestInit, Response } from 'node-fetch';
 import { URL, URLSearchParams } from 'url';
+import {
+  AuthError,
+  ForbiddenError,
+  InternalServerError,
+  NotFoundError,
+  RatelimitError
+} from '../../interfaces/Errors';
 import { PrivateConfig, SpotifyConfig } from '../../interfaces/Config';
 
 export class HttpClient {
@@ -12,7 +19,7 @@ export class HttpClient {
    * @param {string} query
    * @returns {string} Returns the full url.
    */
-  protected getURL(slug: string, query?: Record<string, string>): string {
+  getURL(slug: string, query?: Record<string, string>): string {
     const url = new URL(this.baseURL);
     url.pathname += slug;
     url.search = new URLSearchParams(query).toString();
@@ -30,7 +37,7 @@ export class HttpClient {
       !this.config.clientCredentials.clientSecret ||
       !this.config.refreshToken
     ) {
-      throw new Error('missing information needed to refresh token');
+      throw new AuthError('missing information needed to refresh token');
     }
 
     const res = await fetch('https://accounts.spotify.com/api/token', {
@@ -45,6 +52,11 @@ export class HttpClient {
         refresh_token: this.config.refreshToken
       })
     });
+
+    if (res.status !== 200) {
+      throw new AuthError('refreshing token failed');
+    }
+
     const json = await res.json(); // get JSON
 
     this.config.acccessToken = json.access_token; // save access token
@@ -82,7 +94,56 @@ export class HttpClient {
     }
 
     // add credentials flow
-    throw new Error('auth error');
+    throw new AuthError('auth failed');
+  }
+
+  private sleep(delay: number): Promise<void> {
+    return new Promise((resolve) => setTimeout(resolve, delay));
+  }
+
+  private async handleError(
+    res: Response,
+    url: RequestInfo,
+    init?: RequestInit
+  ): Promise<Response> {
+    if (res.status === 401) {
+      await this.handleAuth();
+
+      res = await this.fetch(url, init);
+
+      return res;
+    }
+
+    if (res.status === 403) {
+      throw new ForbiddenError(`forbidden, are you sure you have the right scopes?\n${res.json()}`);
+    }
+
+    if (res.status === 404) {
+      throw new NotFoundError(`not found (${url})`);
+    }
+
+    if (res.status === 429) {
+      if (this.config.retry || this.config.retry === undefined) {
+        const retry = res.headers.get(`retry-after`) as unknown as number; // get retry time
+
+        // log ratelimit (if enabled)
+        if (this.config.logRetry || this.config.logRetry === undefined)
+          // eslint-disable-next-line no-console
+          console.error(`hit ratelimit, retrying in ${retry} seconds`);
+
+        await this.sleep(retry * 1000); // wait for retry time
+        res = await this.fetch(url, init); // retry request
+      } else {
+        throw new RatelimitError('hit ratelimit');
+      }
+      return res;
+    }
+
+    if (res.status === 500) {
+      throw new InternalServerError('internal server error');
+    }
+
+    return res;
   }
 
   /**
@@ -92,14 +153,20 @@ export class HttpClient {
    * @returns {Promise<Response>} Returns a promise with the response.
    */
   private async fetch(url: RequestInfo, init?: RequestInit): Promise<Response> {
-    const headers = {
-      Authorization: `Bearer ${await this.handleAuth()}`,
-      'Content-Type': 'application/json',
-      Accept: 'application/json',
-      ...init.headers
-    }; // add authorization, content-type and accept headers
+    init = {
+      ...init,
+      headers: {
+        Authorization: `Bearer ${await this.handleAuth()}`,
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+        ...init.headers
+      } // add authorization, content-type and accept headers
+    };
 
-    return await fetch(url, { ...init, headers });
+    let res = await fetch(url, init);
+
+    res = await this.handleError(res, url, init);
+    return res;
   }
 
   /**

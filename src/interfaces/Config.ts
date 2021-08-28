@@ -5,6 +5,14 @@ export interface SpotifyConfig {
   };
   acccessToken?: string;
   refreshToken?: string;
+  /**
+   * Retry request when ratelimit is hit.
+   */
+  retry?: boolean;
+  /**
+   * Log retries.
+   */
+  logRetry?: boolean;
 }
 
 export interface PrivateConfig {
