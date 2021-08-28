@@ -10,6 +10,7 @@ module.exports = {
     'prettier/prettier': 'error',
     camelcase: 'off',
     'no-param-reassign': 'off',
-    'jsdoc/require-param': 'off'
+    'jsdoc/require-param': 'off',
+    'no-loops/no-loops': 'off'
   }
 };
