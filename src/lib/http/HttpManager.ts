@@ -2,6 +2,7 @@ import fetch, { RequestInfo, RequestInit, Response } from 'node-fetch';
 import { URL, URLSearchParams } from 'url';
 import {
   AuthError,
+  BadRequestError,
   ForbiddenError,
   InternalServerError,
   NotFoundError,
@@ -112,6 +113,10 @@ export class HttpClient {
       res = await this.fetch(url, init);
 
       return res;
+    }
+
+    if (res.status === 400) {
+      throw new BadRequestError(`bad request\n${await res.json()}`);
     }
 
     if (res.status === 403) {
