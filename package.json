@@ -11,7 +11,9 @@
   "author": "Sting Alleman <stingalleman@icloud.com>",
   "license": "GPL-3.0",
   "scripts": {
-    "dev": "tsc --watch"
+    "dev": "tsc --watch",
+    "lint": "eslint \"src/**/*.ts\"",
+    "lint:tsc": "tsc --noEmit -p ."
   },
   "devDependencies": {
     "@tribecamp/eslint-config-base": "^1.1.2",
