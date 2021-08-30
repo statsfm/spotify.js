@@ -1,4 +1,4 @@
-import { PrivateConfig, SpotifyConfig } from 'src/interfaces/Config';
+import { PrivateConfig, SpotifyConfig } from '../interfaces/Config';
 import { HttpClient } from './http/HttpManager';
 
 export class Manager {

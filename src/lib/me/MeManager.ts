@@ -1,5 +1,5 @@
-import { RecentlyPlayed } from 'src/interfaces/Spotify';
 import {
+  RecentlyPlayed,
   PrivateUser,
   Artist,
   Track,
@@ -26,7 +26,7 @@ export class MeManager extends Manager {
    * @returns {Promise<PagingObject<Track>>} Returns a promise with the paginated {@link Track}.
    */
   async top(type: 'tracks', options?: TopOptions): Promise<PagingObject<Track>>;
-  
+
   /**
    * @description Get the current user's top tracks or artists.
    * @param  {string} type
@@ -45,7 +45,7 @@ export class MeManager extends Manager {
   }
 
   /**
-   * @description Get current user's (private) data. (required scropes: user-read-private, user-read-email)
+   * @description Get current user's (private) data. (required scropes: user-read-private, user-read-email).
    * @returns {Promise<PrivateUser>}
    */
   async get(): Promise<PrivateUser> {
@@ -55,9 +55,9 @@ export class MeManager extends Manager {
   }
 
   /**
-   * @description Get current user's recently played tracks. (required scoped: user-read-recently-played)
+   * @description Get current user's recently played tracks. (required scoped: user-read-recently-played).
    * @param {limit?:number after?:number;before?:number} options?
-   * @returns {Promise<CursorPagingObject<RecentlyPlayed>>} Returns a promise with the {@link RecentlyPlayed} items
+   * @returns {Promise<CursorPagingObject<RecentlyPlayed>>} Returns a promise with the {@link RecentlyPlayed} items.
    */
   async recentlyPlayed(options?: {
     limit?: number;
