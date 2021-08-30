@@ -1,5 +1,6 @@
 import { Track } from '../../interfaces/Spotify';
 import { Manager } from '../Manager';
+import { chunk } from '../../util';
 
 export class TrackManager extends Manager {
   /**
@@ -19,8 +20,15 @@ export class TrackManager extends Manager {
    * @returns {Promise<Track[]>} Returns a promise with {@link Track}s.
    */
   async list(ids: string[]): Promise<Track[]> {
-    const res = await this.http.get('/tracks', { query: { ids: ids.join(',') } });
+    const tracks = await Promise.all(
+      chunk([...ids], 50).map(async (chunk) => {
+        const res = await this.http.get('/tracks', { query: { ids: chunk.join(',') } });
+        const json = await res.json();
 
-    return (await res.json()).tracks as Track[];
+        return json.tracks as Track[];
+      })
+    );
+
+    return [].concat(...tracks);
   }
 }

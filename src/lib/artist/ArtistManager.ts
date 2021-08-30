@@ -1,7 +1,8 @@
+import { chunk } from '../../util';
 import { Artist } from '../../interfaces/Spotify';
 import { Manager } from '../Manager';
 
-export class ArtistManager extends Manager { 
+export class ArtistManager extends Manager {
   /**
    * @description Get a artist by ID.
    * @param {string} id
@@ -19,8 +20,15 @@ export class ArtistManager extends Manager {
    * @returns {Promise<Artist[]>} Returns a promise with an array of {@link Artist}s.
    */
   async list(ids: string[]): Promise<Artist[]> {
-    const res = await this.http.get('/artists', { query: { ids: ids.join(',') } });
+    const artists = await Promise.all(
+      chunk([...ids], 50).map(async (chunk) => {
+        const res = await this.http.get('/artists', { query: { ids: chunk.join(',') } });
+        const json = await res.json();
 
-    return (await res.json()).artists as Artist[];
+        return json.artists as Artist[];
+      })
+    );
+
+    return [].concat(...artists);
   }
 }
