@@ -13,4 +13,3 @@ export * from './lib/user/UserManager';
 export * from './interfaces/Config';
 export * from './interfaces/Errors';
 export * from './interfaces/Spotify';
-
