@@ -7,3 +7,6 @@ export * from './RecentlyPlayed';
 export * from './TopOptions';
 export * from './Search';
 export * from './SearchOptions';
+export * from './Playlist';
+export * from './AudioAnalysis';
+export * from './AudioFeatures';
