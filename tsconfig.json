@@ -16,8 +16,8 @@
     "noErrorTruncation": true,
     "skipLibCheck": true,
     "resolveJsonModule": true,
-    "outDir": "dist/"
+    "outDir": "dist/",
   },
   "include": ["src/**/*"],
-  "exclude": ["node_modules"]
+  "exclude": ["node_modules"],
 }

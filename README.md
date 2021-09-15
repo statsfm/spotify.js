@@ -15,6 +15,7 @@ yarn add @spotistats/spotify.js
 npm install @spotistats/spotify.js
 ```
 
+### Code
 ```ts
 import { SpotifyAPI } from '@spotistats/spotify.js';
 
