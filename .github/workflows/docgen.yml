@@ -1,6 +1,6 @@
 name: Docgen
 
-on: [release]
+on: [release, workflow_dispatch]
 
 jobs:
   lint:
