@@ -14,7 +14,7 @@
     "dev": "tsc --watch",
     "lint": "eslint \"src/**/*.ts\"",
     "lint:tsc": "tsc --noEmit -p .",
-    "docs": "typedoc --out docs src/index.ts"
+    "docs": "typedoc --excludePrivate --excludeProtected --name \"spotify.js documentation\" --out docs src/index.ts"
   },
   "devDependencies": {
     "@tribecamp/eslint-config-base": "^1.1.2",
