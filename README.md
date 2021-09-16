@@ -1,6 +1,8 @@
 # spotify.js
 
-An API wrapper for Spotify, written in Typescript.
+[![CI](https://github.com/spotistatsapp/spotify.js/actions/workflows/lint.yml/badge.svg)](https://github.com/spotistatsapp/spotify.js/actions/workflows/lint.yml)
+
+An API wrapper for Spotify, written in Typescript. [Documentation](https://spotistatsapp.github.io/spotify.js/).
 
 ## Features
 
@@ -15,7 +17,6 @@ yarn add @spotistats/spotify.js
 npm install @spotistats/spotify.js
 ```
 
-### Code
 ```ts
 import { SpotifyAPI } from '@spotistats/spotify.js';
 
