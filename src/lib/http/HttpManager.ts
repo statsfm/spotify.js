@@ -71,6 +71,35 @@ export class HttpClient {
   }
 
   /**
+   * Get authorization token with client credentials flow.
+   */
+  private async getToken(): Promise<string> {
+    const res = await fetch('https://accounts.spotify.com/api/token', {
+      method: 'POST',
+      headers: {
+        authorization: `Basic ${Buffer.from(
+          `${this.config.clientCredentials.clientId}:${this.config.clientCredentials.clientSecret}`
+        ).toString('base64')}`
+      },
+      body: new URLSearchParams({
+        grant_type: 'client_credentials'
+      })
+    });
+
+    if (res.status !== 200) {
+      throw new AuthError('getting token failed');
+    }
+    const json = await res.json();
+    this.config.acccessToken = json.access_token;
+
+    this.privateConfig.tokenExpire = new Date(
+      new Date().setSeconds(new Date().getSeconds() + 3600)
+    );
+
+    return this.config.acccessToken;
+  }
+
+  /**
    * @description Handles the auth tokens.
    * @returns {string} Returns a auth token.
    */
@@ -95,6 +124,9 @@ export class HttpClient {
     }
 
     // add credentials flow
+    if (this.config.clientCredentials.clientId && this.config.clientCredentials.clientSecret) {
+      return await this.getToken();
+    }
     throw new AuthError('auth failed');
   }
 
