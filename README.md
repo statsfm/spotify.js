@@ -28,6 +28,7 @@ const api = new SpotifyAPI({
     clientId: '',
     clientSecret: '',
   },
+  accessToken: '',
 });
 
 const tracks = await api.tracks
