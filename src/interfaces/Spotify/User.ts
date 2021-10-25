@@ -12,7 +12,7 @@ export interface UserPublic {
   uri: string;
 }
 
-export interface PrivateUser {
+export interface UserPrivate {
   country: string;
   display_name: string;
   email: string;
