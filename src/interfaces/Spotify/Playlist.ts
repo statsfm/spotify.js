@@ -1,5 +1,5 @@
 import { ExternalUrls, Followers, Image } from './shared';
-import { PublicUser } from './User';
+import { UserPublic } from './User';
 
 export interface Playlist {
   collaborative: boolean;
@@ -10,7 +10,7 @@ export interface Playlist {
   id: string;
   images: Image[];
   name: string;
-  owner: PublicUser;
+  owner: UserPublic;
   public: boolean;
   snapshot_id: string;
   tracks: { href: string; total: number };

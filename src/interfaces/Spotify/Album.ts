@@ -1,4 +1,4 @@
-import { Artist, SimplifiedArtist } from './Artist';
+import { Artist, ArtistSimplified } from './Artist';
 import { ExternalUrls } from './shared/ExternalUrls';
 import { Image } from './shared/Image';
 import { Track } from './Track';
@@ -66,7 +66,7 @@ export interface AlbumBase {
   uri: string;
 }
 
-export interface SimplifiedAlbum extends AlbumBase {
+export interface AlbumSimplified extends AlbumBase {
   /**
    * **The field is present when getting an artist's albums.**
    * Compare to album_type this field represents relationship between the artist and the album.
@@ -75,7 +75,7 @@ export interface SimplifiedAlbum extends AlbumBase {
   /**
    * The artists of the album.
    */
-  artists: SimplifiedArtist[];
+  artists: ArtistSimplified[];
 }
 
 export interface Album extends AlbumBase {

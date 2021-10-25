@@ -1,15 +1,15 @@
-import { PublicUser } from '../../interfaces/Spotify';
+import { UserPublic } from '../../interfaces/Spotify';
 import { Manager } from '../Manager';
 
 export class UserManager extends Manager {
   /**
    * @description Get a user by ID.
    * @param  {string} id The ID of the user.
-   * @returns {Promise<PublicUser>} Returns a promise with the {@link PublicUser}.
+   * @returns {Promise<UserPublic>} Returns a promise with the {@link UserPublic}.
    */
-  async get(id: string): Promise<PublicUser> {
+  async get(id: string): Promise<UserPublic> {
     const res = await this.http.get(`/users/${id}`);
 
-    return (await res.json()) as PublicUser;
+    return (await res.json()) as UserPublic;
   }
 }

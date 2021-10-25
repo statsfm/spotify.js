@@ -1,6 +1,6 @@
 import {
   RecentlyPlayed,
-  PrivateUser,
+  UserPrivate,
   Artist,
   Track,
   CursorPagingObject,
@@ -46,12 +46,12 @@ export class MeManager extends Manager {
 
   /**
    * @description Get current user's (private) data. (required scropes: user-read-private, user-read-email).
-   * @returns {Promise<PrivateUser>}
+   * @returns {Promise<UserPrivate>}
    */
-  async get(): Promise<PrivateUser> {
+  async get(): Promise<UserPrivate> {
     const res = await this.http.get('/me');
 
-    return (await res.json()) as PrivateUser;
+    return (await res.json()) as UserPrivate;
   }
 
   /**
