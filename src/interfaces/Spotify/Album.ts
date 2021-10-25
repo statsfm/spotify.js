@@ -1,4 +1,4 @@
-import { Artist, SimplifiedArtist } from './Artist';
+import { Artist, ArtistSimplified } from './Artist';
 import { ExternalUrls } from './shared/ExternalUrls';
 import { Image } from './shared/Image';
 import { Track } from './Track';
@@ -75,7 +75,7 @@ export interface AlbumSimplified extends AlbumBase {
   /**
    * The artists of the album.
    */
-  artists: SimplifiedArtist[];
+  artists: ArtistSimplified[];
 }
 
 export interface Album extends AlbumBase {

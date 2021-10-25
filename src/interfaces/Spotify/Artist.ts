@@ -2,7 +2,7 @@ import { Image } from './shared';
 import { ExternalUrls } from './shared/ExternalUrls';
 import { Followers } from './shared/Followers';
 
-export interface SimplifiedArtist {
+export interface ArtistSimplified {
   external_urls: ExternalUrls;
   href: string;
   id: string;
