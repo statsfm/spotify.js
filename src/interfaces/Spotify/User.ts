@@ -1,7 +1,7 @@
 import { ExternalUrls, Image } from './shared';
 import { Followers } from './shared/Followers';
 
-export interface PublicUser {
+export interface UserPublic {
   display_name?: string;
   external_urls: ExternalUrls;
   followers: Followers;
