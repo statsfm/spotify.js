@@ -81,7 +81,7 @@ export interface Track {
   uri: string;
 }
 
-export interface SimplifiedTrack {
+export interface TrackSimplified {
   /**
    * The artists who performed the track.
    */
