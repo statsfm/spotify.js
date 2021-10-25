@@ -66,7 +66,7 @@ export interface AlbumBase {
   uri: string;
 }
 
-export interface SimplifiedAlbum extends AlbumBase {
+export interface AlbumSimplified extends AlbumBase {
   /**
    * **The field is present when getting an artist's albums.**
    * Compare to album_type this field represents relationship between the artist and the album.

@@ -1,5 +1,5 @@
-import { SimplifiedAlbum } from './Album';
 import { SimplifiedArtist } from './Artist';
+import { AlbumSimplified } from './Album';
 import { ExternalIds } from './shared/ExternalIds';
 import { ExternalUrls } from './shared/ExternalUrls';
 
@@ -7,7 +7,7 @@ export interface Track {
   /**
    * The album on which the track appears.
    */
-  album: SimplifiedAlbum;
+  album: AlbumSimplified;
   /**
    * The artists who performed the track.
    */
