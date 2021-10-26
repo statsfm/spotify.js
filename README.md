@@ -1,8 +1,10 @@
 # spotify.js
 
-[![CI](https://github.com/spotistatsapp/spotify.js/actions/workflows/lint.yml/badge.svg)](https://github.com/spotistatsapp/spotify.js/actions/workflows/lint.yml)
+[![CI](https://github.com/backtrackapp/spotify.js/actions/workflows/lint.yml/badge.svg)](https://github.com/backtrackapp/spotify.js/actions/workflows/lint.yml)
 
-An API wrapper for Spotify, written in Typescript. [Documentation](https://spotistatsapp.github.io/spotify.js/).
+An API wrapper for Spotify, written in Typescript. Made for [Spotistats for Spotify](https://spotistats.app/).
+
+[Documentation](https://spotify.js.org/).
 
 ## Features
 
