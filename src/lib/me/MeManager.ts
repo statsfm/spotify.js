@@ -41,7 +41,7 @@ export class MeManager extends Manager {
       }
     });
 
-    return (await res.json()) as PagingObject<unknown>;
+    return res.data as PagingObject<unknown>;
   }
 
   /**
@@ -51,7 +51,7 @@ export class MeManager extends Manager {
   async get(): Promise<UserPrivate> {
     const res = await this.http.get('/me');
 
-    return (await res.json()) as UserPrivate;
+    return res.data as UserPrivate;
   }
 
   /**
@@ -75,7 +75,7 @@ export class MeManager extends Manager {
       query
     });
 
-    const json = await res.json();
+    const json = res.data;
 
     const mappedJSON = json.items.map((item) => ({
       ...item,

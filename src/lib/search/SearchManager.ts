@@ -31,6 +31,6 @@ export class SearchManager extends Manager {
       query
     });
 
-    return (await res.json()) as SearchItems;
+    return res.data as SearchItems;
   }
 }

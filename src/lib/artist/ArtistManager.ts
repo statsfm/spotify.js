@@ -11,7 +11,7 @@ export class ArtistManager extends Manager {
   async get(id: string): Promise<Artist> {
     const res = await this.http.get(`/artists/${id}`);
 
-    return (await res.json()) as Artist;
+    return res.data as Artist;
   }
 
   /**
@@ -23,7 +23,7 @@ export class ArtistManager extends Manager {
     const artists = await Promise.all(
       chunk([...ids], 50).map(async (chunk) => {
         const res = await this.http.get('/artists', { query: { ids: chunk.join(',') } });
-        const json = await res.json();
+        const json = res.data;
 
         return json.artists as Artist[];
       })

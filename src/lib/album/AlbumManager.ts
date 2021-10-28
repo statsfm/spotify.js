@@ -11,7 +11,7 @@ export class AlbumManager extends Manager {
   async get(id: string): Promise<Album> {
     const res = await this.http.get(`/albums/${id}`);
 
-    return (await res.json()) as Album;
+    return res.data as Album;
   }
 
   /**
@@ -23,7 +23,7 @@ export class AlbumManager extends Manager {
     const albums = await Promise.all(
       chunk([...ids], 20).map(async (chunk) => {
         const res = await this.http.get('/albums', { query: { ids: chunk.join(',') } });
-        const json = await res.json();
+        const json = res.data;
 
         return json.albums as Album[];
       })

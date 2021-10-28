@@ -20,7 +20,6 @@
     "@tribecamp/eslint-config-base": "^1.1.2",
     "@tribecamp/eslint-config-typescript": "^1.2.2",
     "@types/node": "^16.7.0",
-    "@types/node-fetch": "^2.5.12",
     "@typescript-eslint/eslint-plugin": "^4.29.2",
     "@typescript-eslint/parser": "^4.29.2",
     "eslint": "^7.32.0",
@@ -31,6 +30,6 @@
     "typescript": "^4.3.5"
   },
   "dependencies": {
-    "node-fetch": "^2.6.1"
+    "axios": "^0.24.0"
   }
 }

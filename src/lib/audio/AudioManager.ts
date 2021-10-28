@@ -11,7 +11,7 @@ export class AudioManager extends Manager {
   async feature(id: string): Promise<AudioFeatures> {
     const res = await this.http.get(`/audio-features/${id}`);
 
-    return (await res.json()) as AudioFeatures;
+    return res.data as AudioFeatures;
   }
 
   /**
@@ -26,7 +26,7 @@ export class AudioManager extends Manager {
       }
     });
 
-    return (await res.json()).audio_features as AudioFeatures[];
+    return res.data.audio_features as AudioFeatures[];
   }
 
   /**
@@ -37,6 +37,6 @@ export class AudioManager extends Manager {
   async analysis(id: string): Promise<AudioAnalysis> {
     const res = await this.http.get(`/audio-analysis/${id}`);
 
-    return (await res.json()) as AudioAnalysis;
+    return res.data as AudioAnalysis;
   }
 }

@@ -10,6 +10,6 @@ export class UserManager extends Manager {
   async get(id: string): Promise<UserPublic> {
     const res = await this.http.get(`/users/${id}`);
 
-    return (await res.json()) as UserPublic;
+    return res.data as UserPublic;
   }
 }

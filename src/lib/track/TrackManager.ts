@@ -11,7 +11,7 @@ export class TrackManager extends Manager {
   async get(id: string): Promise<Track> {
     const res = await this.http.get(`/tracks/${id}`);
 
-    return (await res.json()) as Track;
+    return res.data as Track;
   }
 
   /**
@@ -23,7 +23,7 @@ export class TrackManager extends Manager {
     const tracks = await Promise.all(
       chunk([...ids], 50).map(async (chunk) => {
         const res = await this.http.get('/tracks', { query: { ids: chunk.join(',') } });
-        const json = await res.json();
+        const json = res.data;
 
         return json.tracks as Track[];
       })
