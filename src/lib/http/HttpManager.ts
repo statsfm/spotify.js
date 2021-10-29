@@ -1,12 +1,17 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 
-import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
+import axios, { AxiosError, AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
 import { URL, URLSearchParams } from 'url';
-import { AuthError } from '../../interfaces/Errors';
+import {
+  AuthError,
+  BadRequestError,
+  ForbiddenError,
+  InternalServerError,
+  NotFoundError,
+  RatelimitError
+} from '../../interfaces/Errors';
 import { PrivateConfig, SpotifyConfig } from '../../interfaces/Config';
-
-axios.defaults.validateStatus = (): true => true;
 
 export class HttpClient {
   protected baseURL = 'https://api.spotify.com/v1';
@@ -54,7 +59,8 @@ export class HttpClient {
           authorization: `Basic ${Buffer.from(
             `${this.config.clientCredentials.clientId}:${this.config.clientCredentials.clientSecret}`
           ).toString('base64')}`
-        }
+        },
+        validateStatus: () => true
       }
     );
 
@@ -86,7 +92,8 @@ export class HttpClient {
           authorization: `Basic ${Buffer.from(
             `${this.config.clientCredentials.clientId}:${this.config.clientCredentials.clientSecret}`
           ).toString('base64')}`
-        }
+        },
+        validateStatus: () => true
       }
     );
 
@@ -138,58 +145,9 @@ export class HttpClient {
     return new Promise((resolve) => setTimeout(resolve, delay));
   }
 
-  // private async handleError(
-  //   res: Response,
-  //   url: RequestInfo,
-  //   init?: RequestInit
-  // ): Promise<Response> {
-  //   if (res.status === 401) {
-  //     await this.handleAuth();
-
-  //     res = await this.fetch(url, init);
-
-  //     return res;
-  //   }
-
-  //   if (res.status === 400) {
-  //     throw new BadRequestError(`bad request\n${await res.json()}`);
-  //   }
-
-  //   if (res.status === 403) {
-  //     throw new ForbiddenError(`forbidden, are you sure you have the right scopes?\n${res.json()}`);
-  //   }
-
-  //   if (res.status === 404) {
-  //     throw new NotFoundError(`not found (${url})`);
-  //   }
-
-  //   if (res.status === 429) {
-  //     if (this.config.retry || this.config.retry === undefined) {
-  //       const retry = res.headers.get(`retry-after`) as unknown as number; // get retry time
-
-  //       // log ratelimit (if enabled)
-  //       if (this.config.logRetry || this.config.logRetry === undefined)
-  //         // eslint-disable-next-line no-console
-  //         console.error(`hit ratelimit, retrying in ${retry} seconds`);
-
-  //       await this.sleep(retry * 1000); // wait for retry time
-  //       res = await this.fetch(url, init); // retry request
-  //     } else {
-  //       throw new RatelimitError('hit ratelimit');
-  //     }
-  //     return res;
-  //   }
-
-  //   if (res.status === 500) {
-  //     throw new InternalServerError('internal server error');
-  //   }
-
-  //   return res;
-  // }
-
   // create axios client, set interceptors, handle errors & auth
   private create(): AxiosInstance {
-    const client = axios.create({ proxy: this.config.http?.proxy, validateStatus: () => true });
+    const client = axios.create({ proxy: this.config.http?.proxy });
 
     // request interceptor
     client.interceptors.request.use(async (config) => {
@@ -206,13 +164,65 @@ export class HttpClient {
       return config;
     });
 
-    // client.interceptors.response.use(
-    //   (config) => config,
-    //   (err) => {
-    //     console.log('error');
-    //     return err;
-    //   }
-    // );
+    // response interceptor
+    client.interceptors.response.use(
+      (config) => config,
+      // error handler
+      async (err: AxiosError) => {
+        let res = err.response;
+
+        // throw error if bad request
+        if (res.status === 400) {
+          throw new BadRequestError(`bad request\n${JSON.stringify(err.response.data, null, ' ')}`);
+        }
+
+        // throw error if forbideden
+        if (res.status === 403) {
+          throw new ForbiddenError(
+            `forbidden, are you sure you have the right scopes?\n${JSON.stringify(
+              res.data,
+              null,
+              ' '
+            )}`
+          );
+        }
+
+        // throw error if 404
+        if (res.status === 404) {
+          throw new NotFoundError(`not found (${res.config.url})`);
+        }
+
+        if (res.status === 401) {
+          throw new AuthError('unauthorized');
+          //   await this.handleAuth();
+          //   const res = await client.request(err.config);
+          //   return res;
+        }
+
+        if (res.status === 500) {
+          throw new InternalServerError('internal server error');
+        }
+
+        if (res.status === 429) {
+          if (this.config.retry || this.config.retry === undefined) {
+            const retry = res.headers[`retry-after`] as unknown as number; // get retry time
+
+            // log ratelimit (if enabled)
+            if (this.config.logRetry || this.config.logRetry === undefined)
+              // eslint-disable-next-line no-console
+              console.error(`hit ratelimit, retrying in ${retry} second(s)`);
+
+            await this.sleep(retry * 1000); // wait for retry time
+            res = await client.request(err.config); // retry request
+          } else {
+            throw new RatelimitError('hit ratelimit');
+          }
+          return res;
+        }
+
+        return err;
+      }
+    );
 
     return client;
   }
