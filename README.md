@@ -8,10 +8,10 @@ An API wrapper for Spotify, written in Typescript. Made for [Spotistats for Spot
 
 ## Features
 
-- Automatic token refreshing
-- Authentication
-  - Client Credentials flow
-  - Authorization Code flow (with `refreshToken`)
+- Support for both the authorization code flow and the client credentials flow.
+- Automatic token refreshing.
+- Retries requests when the ratelimit is hit.
+- Highly configurable.
 
 ## Usage
 
@@ -30,7 +30,8 @@ const api = new SpotifyAPI({
     clientId: '',
     clientSecret: '',
   },
-  accessToken: '',
+  accessToken: '', // optional, required for private user data
+  refreshToken: '', // optional, required for private user data and automatic token refreshing
 });
 
 const tracks = await api.tracks
