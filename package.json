@@ -11,7 +11,9 @@
   "author": "Sting Alleman <stingalleman@icloud.com>",
   "license": "GPL-3.0",
   "scripts": {
-    "dev": "tsc --watch",
+    "dev": "rm -rf dist && tsc --watch",
+    "build": "rm -rf dist && tsc",
+    "publish": "yarn lint && yarn build && yarn publish && gh release create",
     "lint": "eslint \"src/**/*.ts\"",
     "lint:tsc": "tsc --noEmit -p .",
     "docs": "typedoc --excludePrivate --excludeProtected --name \"spotify.js documentation\" --out docs src/index.ts"
