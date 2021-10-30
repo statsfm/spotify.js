@@ -4,18 +4,12 @@ import { Manager } from '../Manager';
 export class SearchManager extends Manager {
   /**
    * @description Search the Spotify catalog for anything that matches the searchQuery.
-   * @param  {string} searchQuery The query you want to search for
-   * @param  {SearchOptions} options? The search options
-   * @returns {Promise<SearchItems>} Returns a promise with all the {@link SearchItems}
+   * @param {string} searchQuery The query you want to search for.
+   * @param {SearchOptions} options The search options.
+   * @returns {Promise<SearchItems>} Returns a promise with all the {@link SearchItems}.
    */
-  async get(searchQuery: string, options?: SearchOptions): Promise<SearchItems> {
-    let types: string[];
-
-    if (!options?.include) {
-      types = Object.keys(options.include);
-    } else {
-      types = Object.keys(options.include).filter((key) => options.include[key]);
-    }
+  async get(searchQuery: string, options: SearchOptions): Promise<SearchItems> {
+    const types = Object.keys(options.include).filter((key) => options.include[key]);
 
     const query: Record<string, string> = {
       q: searchQuery

@@ -1,9 +1,8 @@
 export interface SearchOptions {
   /**
    * List of item types to search across.
-   * Default: all (tracks, artists, albums, playlists, shows, episodes).
    */
-  include?: {
+  include: {
     track?: boolean;
     artist?: boolean;
     album?: boolean;
