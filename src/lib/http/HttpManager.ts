@@ -4,6 +4,7 @@
 import axios, { AxiosError, AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
 import { URL, URLSearchParams } from 'url';
 import * as https from 'https';
+import { ClientRequest } from 'http';
 import {
   AuthError,
   BadRequestError,
@@ -152,12 +153,16 @@ export class HttpClient {
 
   // create axios client, set interceptors, handle errors & auth
   private create(): AxiosInstance {
-    const client = axios.create({
-      proxy: this.config.http?.proxy,
-      // @ts-ignore
-      transport: {
+    const config: AxiosRequestConfig = {
+      proxy: this.config.http?.proxy
+    };
+
+    if (this.config.http?.localAddress) {
+      // TODO: https://github.com/axios/axios/issues/3876
+      // @ts-expect-error `transport` is not included in axios types (see https://github.com/axios/axios/issues/3876)
+      config.transport = {
         ...https,
-        request: (options, callback) =>
+        request: (options, callback): ClientRequest =>
           https.request(
             {
               ...options,
@@ -166,8 +171,9 @@ export class HttpClient {
             },
             callback
           )
-      }
-    });
+      };
+    }
+    const client = axios.create(config);
 
     // request interceptor
     client.interceptors.request.use(async (config) => {
