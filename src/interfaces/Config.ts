@@ -27,6 +27,10 @@ export interface SpotifyConfig {
      * Set a custom user agent. Default: "spotify.js/<version> https://github.com/backtrackapp/spotify.js".
      */
     userAgent?: string;
+    /**
+     * Change the default outbind IP (can be IPV6 or IPV4).
+     */
+    localAddress?: string;
   };
 }
 

@@ -3,6 +3,7 @@
 
 import axios, { AxiosError, AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
 import { URL, URLSearchParams } from 'url';
+import * as https from 'https';
 import {
   AuthError,
   BadRequestError,
@@ -151,7 +152,22 @@ export class HttpClient {
 
   // create axios client, set interceptors, handle errors & auth
   private create(): AxiosInstance {
-    const client = axios.create({ proxy: this.config.http?.proxy });
+    const client = axios.create({
+      proxy: this.config.http?.proxy,
+      // @ts-ignore
+      transport: {
+        ...https,
+        request: (options, callback) =>
+          https.request(
+            {
+              ...options,
+              localAddress: this.config.http?.localAddress,
+              family: this.config.http?.localAddress.includes(':') ? 6 : 4
+            },
+            callback
+          )
+      }
+    });
 
     // request interceptor
     client.interceptors.request.use(async (config) => {
