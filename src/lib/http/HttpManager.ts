@@ -141,6 +141,10 @@ export class HttpClient {
     throw new AuthError('auth failed');
   }
 
+  /**
+   * Sleep function.
+   * @param {number} delay Delay in milliseconds.
+   */
   private sleep(delay: number): Promise<void> {
     return new Promise((resolve) => setTimeout(resolve, delay));
   }
@@ -171,56 +175,60 @@ export class HttpClient {
       async (err: AxiosError) => {
         let res = err.response;
 
-        // throw error if bad request
-        if (res.status === 400) {
-          throw new BadRequestError(`bad request\n${JSON.stringify(err.response.data, null, ' ')}`);
-        }
-
-        // throw error if forbideden
-        if (res.status === 403) {
-          throw new ForbiddenError(
-            `forbidden, are you sure you have the right scopes?\n${JSON.stringify(
-              res.data,
-              null,
-              ' '
-            )}`
-          );
-        }
-
-        // throw error if 404
-        if (res.status === 404) {
-          throw new NotFoundError(`not found (${res.config.url})`);
-        }
-
-        if (res.status === 401) {
-          throw new AuthError('unauthorized');
-          //   await this.handleAuth();
-          //   const res = await client.request(err.config);
-          //   return res;
-        }
-
-        if (res.status === 500) {
-          throw new InternalServerError('internal server error');
-        }
-
-        if (res.status === 429) {
-          if (this.config.retry || this.config.retry === undefined) {
-            const retry = res.headers[`retry-after`] as unknown as number; // get retry time
-
-            // log ratelimit (if enabled)
-            if (this.config.logRetry || this.config.logRetry === undefined)
-              // eslint-disable-next-line no-console
-              console.error(`hit ratelimit, retrying in ${retry} second(s)`);
-
-            await this.sleep(retry * 1000); // wait for retry time
-            res = await client.request(err.config); // retry request
-          } else {
-            throw new RatelimitError('hit ratelimit');
+        if (res?.status) {
+          // throw error if bad request
+          if (res.status === 400) {
+            throw new BadRequestError(
+              `bad request\n${JSON.stringify(err.response.data, null, ' ')}`
+            );
           }
-          return res;
+
+          // throw error if forbideden
+          if (res.status === 403) {
+            throw new ForbiddenError(
+              `forbidden, are you sure you have the right scopes?\n${JSON.stringify(
+                res.data,
+                null,
+                ' '
+              )}`
+            );
+          }
+
+          // throw error if 404
+          if (res.status === 404) {
+            throw new NotFoundError(`not found (${res.config.url})`);
+          }
+
+          if (res.status === 401) {
+            throw new AuthError('unauthorized');
+            //   await this.handleAuth();
+            //   const res = await client.request(err.config);
+            //   return res;
+          }
+
+          if (res.status === 500) {
+            throw new InternalServerError('internal server error');
+          }
+
+          if (res.status === 429) {
+            if (this.config.retry || this.config.retry === undefined) {
+              const retry = res.headers[`retry-after`] as unknown as number; // get retry time
+
+              // log ratelimit (if enabled)
+              if (this.config.logRetry || this.config.logRetry === undefined)
+                // eslint-disable-next-line no-console
+                console.error(`hit ratelimit, retrying in ${retry} second(s)`);
+
+              await this.sleep(retry * 1000); // wait for retry time
+              res = await client.request(err.config); // retry request
+            } else {
+              throw new RatelimitError('hit ratelimit');
+            }
+            return res;
+          }
         }
 
-        return err;
+        throw err;
       }
     );
 
