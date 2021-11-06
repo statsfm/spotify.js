@@ -77,11 +77,11 @@ export class MeManager extends Manager {
 
     const json = res.data;
 
-    const mappedJSON = json.items.map((item) => ({
+    json.items = json.items.map((item) => ({
       ...item,
       played_at: new Date(item.played_at)
     }));
 
-    return mappedJSON as CursorPagingObject<RecentlyPlayed>;
+    return json as CursorPagingObject<RecentlyPlayed>;
   }
 }
