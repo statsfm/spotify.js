@@ -66,8 +66,17 @@ export class HttpClient {
       }
     );
 
+    // error handling
     if (res.status !== 200) {
-      throw new AuthError('refreshing token failed');
+      if (res.status === 400) {
+        throw new AuthError(
+          `getting token failed: bad request\n${JSON.stringify(res.data, null, ' ')}`
+        );
+      } else if (res.status < 600 && res.status >= 500) {
+        throw new AuthError(`getting token failed: server error (${res.status})`);
+      } else {
+        throw new AuthError(`getting token failed (${res.status})`);
+      }
     }
 
     this.config.acccessToken = res.data.access_token; // save access token
@@ -99,8 +108,17 @@ export class HttpClient {
       }
     );
 
+    // error handling
     if (res.status !== 200) {
-      throw new AuthError('getting token failed');
+      if (res.status === 400) {
+        throw new AuthError(
+          `getting token failed: bad request\n${JSON.stringify(res.data, null, ' ')}`
+        );
+      } else if (res.status < 600 && res.status >= 500) {
+        throw new AuthError(`getting token failed: server error (${res.status})`);
+      } else {
+        throw new AuthError(`getting token failed (${res.status})`);
+      }
     }
 
     this.config.acccessToken = res.data.access_token;
@@ -129,18 +147,19 @@ export class HttpClient {
 
     // refresh token
     if (
-      this.config.clientCredentials.clientId &&
-      this.config.clientCredentials.clientSecret &&
-      this.config.refreshToken
+      this.config?.clientCredentials?.clientId &&
+      this.config?.clientCredentials?.clientSecret &&
+      this.config?.refreshToken
     ) {
       return await this.refreshToken(); // refresh token
     }
 
     // add credentials flow
-    if (this.config.clientCredentials.clientId && this.config.clientCredentials.clientSecret) {
+    if (this.config?.clientCredentials?.clientId && this.config?.clientCredentials?.clientSecret) {
       return await this.getToken();
     }
-    throw new AuthError('auth failed');
+
+    throw new AuthError('auth failed: missing information to handle auth');
   }
 
   /**
