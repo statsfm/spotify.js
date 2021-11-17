@@ -1,5 +1,5 @@
 import { Artist, ArtistSimplified } from './Artist';
-import { ExternalUrls } from './shared/ExternalUrls';
+import { ExternalUrls, ExternalIds } from './shared';
 import { Image } from './shared/Image';
 import { Track } from './Track';
 
@@ -68,6 +68,10 @@ export interface AlbumBase {
    * The popularity of the artist. The value will be between 0 and 100, with 100 being the most popular. The artist's popularity is calculated from the popularity of all the artist's tracks.
    */
   popularity: number;
+  /**
+   * Known external IDs for the track.
+   */
+  external_ids?: ExternalIds;
 }
 
 export interface AlbumSimplified extends AlbumBase {
