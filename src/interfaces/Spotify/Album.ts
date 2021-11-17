@@ -71,7 +71,7 @@ export interface AlbumBase {
   /**
    * Known external IDs for the track.
    */
-  external_ids: ExternalIds;
+  external_ids?: ExternalIds;
 }
 
 export interface AlbumSimplified extends AlbumBase {
