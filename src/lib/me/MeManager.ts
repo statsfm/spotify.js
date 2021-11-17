@@ -30,7 +30,7 @@ export class MeManager extends Manager {
   /**
    * @description Get the current user's top tracks or artists.
    * @param  {string} type
-   * @param  {TopOptions} options?
+   * @param  {TopOptions} options
    */
   async top(type: 'artists' | 'tracks', options?: TopOptions): Promise<unknown> {
     const res = await this.http.get(`/me/top/${type}`, {
