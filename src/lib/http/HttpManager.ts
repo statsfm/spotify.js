@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 
@@ -41,7 +42,7 @@ export class HttpClient {
    * @description Get a refresh token.
    * @returns {string} Returns the refresh token.
    */
-  private async refreshToken(): Promise<string> {
+  private async refreshToken(retryAmount = 0): Promise<string> {
     if (
       !this.config.clientCredentials.clientId ||
       !this.config.clientCredentials.clientSecret ||
@@ -70,12 +71,17 @@ export class HttpClient {
     if (res.status !== 200) {
       if (res.status === 400) {
         throw new AuthError(
-          `getting token failed: bad request\n${JSON.stringify(res.data, null, ' ')}`
+          `refreshing token failed: bad request\n${JSON.stringify(res.data, null, ' ')}`
         );
+      }
+
+      if (retryAmount < 5) {
+        console.log(`refreshing token failed (${res.status}). retrying... (${retryAmount + 1})`);
+        await this.refreshToken(retryAmount + 1);
       } else if (res.status < 600 && res.status >= 500) {
-        throw new AuthError(`getting token failed: server error (${res.status})`);
+        throw new AuthError(`refreshing token failed: server error (${res.status})`);
       } else {
-        throw new AuthError(`getting token failed (${res.status})`);
+        throw new AuthError(`refreshing token failed (${res.status})`);
       }
     }
 
@@ -92,7 +98,7 @@ export class HttpClient {
   /**
    * Get authorization token with client credentials flow.
    */
-  private async getToken(): Promise<string> {
+  private async getToken(retryAmount = 0): Promise<string> {
     const res = await axios.post(
       this.tokenURL,
       new URLSearchParams({
@@ -114,6 +120,11 @@ export class HttpClient {
         throw new AuthError(
           `getting token failed: bad request\n${JSON.stringify(res.data, null, ' ')}`
         );
+      }
+
+      if (retryAmount < 5) {
+        console.log(`getting token failed (${res.status}). retrying... (${retryAmount + 1})`);
+        await this.getToken(retryAmount + 1);
       } else if (res.status < 600 && res.status >= 500) {
         throw new AuthError(`getting token failed: server error (${res.status})`);
       } else {
