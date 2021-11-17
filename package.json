@@ -1,6 +1,6 @@
 {
   "name": "@spotistats/spotify.js",
-  "version": "1.4.4",
+  "version": "1.5.0",
   "description": "Node wrapper for Spotify, written in TS.",
   "main": "dist/index.js",
   "private": false,
