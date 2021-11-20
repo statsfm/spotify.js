@@ -102,7 +102,7 @@ export class MeManager extends Manager {
    * @description Save multiple tracks by ID. (required scropes: user-library-read).
    * @param {string} ids Array of IDs.
    */
-  async saveTracks(ids: string[]) {
+  async saveTracks(ids: string[]): Promise<void> {
     await this.http.put(`/me/tracks`, {
       ids
     });
@@ -112,7 +112,7 @@ export class MeManager extends Manager {
    * @description Remove multiple saved tracks by ID. (required scropes: user-library-read).
    * @param {string} ids Array of IDs.
    */
-  async unsaveTracks(ids: string[]) {
+  async unsaveTracks(ids: string[]): Promise<void> {
     await this.http.delete(`/me/tracks`, {
       query: { ids: ids.join(', ') }
     });
