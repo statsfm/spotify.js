@@ -69,4 +69,24 @@ export class ArtistManager extends Manager {
     const res = await this.http.get(`/artists/${id}/related-artists`);
     return res.data.artists as Artist[];
   }
+
+  /**
+   * @description Get top tracks from artist by ID.
+   * @param {string} id
+   * @param {market: string} options?
+   * @returns {Promise<Track[]>} Returns a promise with an array of {@link Track}s.
+   */
+  async topTracks(
+    id: string,
+    options?: {
+      market: string;
+    }
+  ): Promise<Track[]> {
+    const res = await this.http.get(`/artists/${id}/top-tracks`, {
+      query: {
+        market: options.market
+      }
+    });
+    return res.data.tracks as Track[];
+  }
 }
