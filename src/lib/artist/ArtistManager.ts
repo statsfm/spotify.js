@@ -1,5 +1,5 @@
 import { chunk } from '../../util';
-import { Artist } from '../../interfaces/Spotify';
+import { Album, Artist, CursorPagingObject, Track } from '../../interfaces/Spotify';
 import { Manager } from '../Manager';
 
 export class ArtistManager extends Manager {
@@ -30,5 +30,33 @@ export class ArtistManager extends Manager {
     );
 
     return [].concat(...artists);
+  }
+
+  /**
+   * @description Get multiple albums from an artist by ID.
+   * @param {string} id
+   * @param {market?:string limit?:number offset?:number} options?
+   * @returns {Promise<CursorPagingObject<Album[]>>} Returns a promise with an array of {@link Album}s.
+   */
+  async albums(
+    id: string,
+    options?: {
+      market?: string;
+      limit?: number;
+      offset?: number;
+    }
+  ): Promise<CursorPagingObject<Album[]>> {
+    const query: Record<string, string> = {
+      limit: options?.limit ? (options.limit as unknown as string) : '20'
+    };
+
+    if (options?.market) query.market = options.market;
+    if (options?.offset) query.offset = options.offset as unknown as string;
+
+    const res = await this.http.get(`/artists/${id}/albums`, {
+      query
+    });
+
+    return res.data.items as CursorPagingObject<Album[]>;
   }
 }
