@@ -59,4 +59,14 @@ export class ArtistManager extends Manager {
 
     return res.data.items as CursorPagingObject<Album[]>;
   }
+
+  /**
+   * @description Get related artists by ID.
+   * @param {string} id
+   * @returns {Promise<CursorPagingObject<Album[]>>} Returns a promise with an array of {@link Artist}s.
+   */
+  async related(id: string): Promise<Artist[]> {
+    const res = await this.http.get(`/artists/${id}/related-artists`);
+    return res.data.artists as Artist[];
+  }
 }
