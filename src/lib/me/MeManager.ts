@@ -84,4 +84,36 @@ export class MeManager extends Manager {
 
     return json as CursorPagingObject<RecentlyPlayed>;
   }
+
+  /**
+   * @description Check if one or more tracks is saved in the current user's library. (required scropes: user-library-read).
+   * @returns {Promise<boolean[]>} Returns a promise with the an array of booleans.
+   */
+  async containTracks(ids: string[]): Promise<boolean[]> {
+    const res = await this.http.get(`/me/tracks/contains`, {
+      query: { ids: ids.join(',') }
+    });
+
+    return res.data as boolean[];
+  }
+
+  /**
+   * @description Save multiple tracks by ID. (required scropes: user-library-read).
+   * @param {string} ids Array of IDs.
+   */
+  async saveTracks(ids: string[]): Promise<void> {
+    await this.http.put(`/me/tracks`, {
+      ids
+    });
+  }
+
+  /**
+   * @description Remove multiple saved tracks by ID. (required scropes: user-library-read).
+   * @param {string} ids Array of IDs.
+   */
+  async unsaveTracks(ids: string[]): Promise<void> {
+    await this.http.delete(`/me/tracks`, {
+      query: { ids: ids.join(',') }
+    });
+  }
 }
