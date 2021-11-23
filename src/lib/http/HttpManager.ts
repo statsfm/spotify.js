@@ -149,7 +149,8 @@ export class HttpClient {
     if (this.config.acccessToken) {
       // check if token is expired
       if (new Date() >= this.privateConfig.tokenExpire) {
-        return await this.refreshToken(); // refresh token
+        this.config.acccessToken = undefined;
+        return await this.handleAuth();
       }
 
       // return already defined access token
