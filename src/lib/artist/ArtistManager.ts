@@ -42,7 +42,11 @@ export class ArtistManager extends Manager {
   /**
    * @description Get multiple albums from an artist by ID.
    * @param {string} id
-   * @param {object} options
+   * @param {object} options hello
+   * @param {Markets} options.market An ISO 3166-1 alpha-2 country code.
+   * If a country code is specified, only episodes that are available in that market will be returned.
+   * If a valid user access token is specified in the request header, the country associated with the user account will take priority over this parameter.
+   * Note: If neither market or user country are provided, the content is considered unavailable for the client.
    * @returns {Promise<PagingObject<AlbumSimplified[]>>} Returns a promise with an array of {@link Album}s.
    */
   async albums(
@@ -102,26 +106,28 @@ export class ArtistManager extends Manager {
    */
   async related(id: string): Promise<Artist[]> {
     const res = await this.http.get(`/artists/${id}/related-artists`);
+
     return res.data.artists as Artist[];
   }
 
   /**
    * @description Get top tracks from artist by ID.
    * @param {string} id
-   * @param {market: string} options?
+   * @param {Markets} market An ISO 3166-1 alpha-2 country code.
+   * If a country code is specified, only episodes that are available in that market will be returned.
+   * If a valid user access token is specified in the request header, the country associated with the user account will take priority over this parameter.
+   * Note: If neither market or user country are provided, the content is considered unavailable for the client.
    * @returns {Promise<Track[]>} Returns a promise with an array of {@link Track}s.
    */
-  async topTracks(
-    id: string,
-    options?: {
-      market: string;
-    }
-  ): Promise<Track[]> {
+  async topTracks(id: string, market?: Markets): Promise<Track[]> {
+    const query: Record<string, string> = {};
+
+    if (market) query.market = market;
+
     const res = await this.http.get(`/artists/${id}/top-tracks`, {
-      query: {
-        market: options.market
-      }
+      query
     });
+
     return res.data.tracks as Track[];
   }
 }
