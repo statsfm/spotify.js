@@ -1,5 +1,12 @@
 import { chunk } from '../../util';
-import { Album, Artist, CursorPagingObject, Track } from '../../interfaces/Spotify';
+import {
+  AlbumSimplified,
+  Artist,
+  Markets,
+  PagingObject,
+  PagingOptions,
+  Track
+} from '../../interfaces/Spotify';
 import { Manager } from '../Manager';
 
 export class ArtistManager extends Manager {
@@ -35,29 +42,57 @@ export class ArtistManager extends Manager {
   /**
    * @description Get multiple albums from an artist by ID.
    * @param {string} id
-   * @param {market?:string limit?:number offset?:number} options?
-   * @returns {Promise<CursorPagingObject<Album[]>>} Returns a promise with an array of {@link Album}s.
+   * @param {object} options
+   * @returns {Promise<PagingObject<AlbumSimplified[]>>} Returns a promise with an array of {@link Album}s.
    */
   async albums(
     id: string,
-    options?: {
-      market?: string;
-      limit?: number;
-      offset?: number;
+    options?: PagingOptions & {
+      album?: boolean;
+      single?: boolean;
+      appears_on?: boolean;
+      compilation?: boolean;
+      market?: Markets;
     }
-  ): Promise<CursorPagingObject<Album[]>> {
+  ): Promise<PagingObject<AlbumSimplified>> {
+    const include_groups: string[] = [];
+
+    if (options) {
+      if (!options.album && !options.single && !options.appears_on && !options.compilation) {
+        include_groups.push('album', 'single', 'appears_on', 'compilation');
+      }
+
+      if (options.album) {
+        include_groups.push('album');
+      }
+      if (options.single) {
+        include_groups.push('single');
+      }
+      if (options.appears_on) {
+        include_groups.push('appears_on');
+      }
+      if (options.compilation) {
+        include_groups.push('compilation');
+      }
+    } else if (!options) {
+      include_groups.push('album', 'single', 'appears_on', 'compilation');
+    }
+
     const query: Record<string, string> = {
-      limit: options?.limit ? (options.limit as unknown as string) : '20'
+      include_groups: include_groups.join(','),
+      limit: options?.limit ? (options.limit as unknown as string) : '20',
+      offset: options?.offset ? (options.offset as unknown as string) : '0'
     };
 
-    if (options?.market) query.market = options.market;
-    if (options?.offset) query.offset = options.offset as unknown as string;
+    if (options?.market) {
+      query.market = options.market;
+    }
 
     const res = await this.http.get(`/artists/${id}/albums`, {
       query
     });
 
-    return res.data.items as CursorPagingObject<Album[]>;
+    return res.data as PagingObject<AlbumSimplified>;
   }
 
   /**
