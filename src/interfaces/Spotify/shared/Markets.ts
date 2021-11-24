@@ -182,4 +182,5 @@ export type Markets =
   | 'XK'
   | 'ZA'
   | 'ZM'
-  | 'ZW';
+  | 'ZW'
+  | 'from_token';

@@ -1,3 +1,5 @@
+import { Markets } from 'src';
+
 export interface SearchOptions {
   /**
    * List of item types to search across.
@@ -25,7 +27,7 @@ export interface SearchOptions {
    * An ISO 3166-1 alpha-2 country code or the string `from_token`.
    * If market is set to `from_token`, and a valid access token is specified in the request header, only content playable in the country associated with the user account, is returned.
    */
-  market?: string;
+  market?: Markets;
   /**
    * The index of the first result to return.
    * Maximum: 1000. Default: 0.
