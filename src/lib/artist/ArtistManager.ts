@@ -42,7 +42,7 @@ export class ArtistManager extends Manager {
   /**
    * @description Get multiple albums from an artist by ID.
    * @param {string} id
-   * @param {object} options hello
+   * @param {object} options
    * @param {Markets} options.market An ISO 3166-1 alpha-2 country code.
    * If a country code is specified, only episodes that are available in that market will be returned.
    * If a valid user access token is specified in the request header, the country associated with the user account will take priority over this parameter.
@@ -52,45 +52,24 @@ export class ArtistManager extends Manager {
   async albums(
     id: string,
     options?: PagingOptions & {
-      album?: boolean;
-      single?: boolean;
-      appears_on?: boolean;
-      compilation?: boolean;
+      include?: { album?: boolean; single?: boolean; appears_on?: boolean; compilation?: boolean };
       market?: Markets;
     }
   ): Promise<PagingObject<AlbumSimplified>> {
-    const include_groups: string[] = [];
+    let include_groups: string[] = [];
 
-    if (options) {
-      if (!options.album && !options.single && !options.appears_on && !options.compilation) {
-        include_groups.push('album', 'single', 'appears_on', 'compilation');
-      }
-
-      if (options.album) {
-        include_groups.push('album');
-      }
-      if (options.single) {
-        include_groups.push('single');
-      }
-      if (options.appears_on) {
-        include_groups.push('appears_on');
-      }
-      if (options.compilation) {
-        include_groups.push('compilation');
-      }
-    } else if (!options) {
-      include_groups.push('album', 'single', 'appears_on', 'compilation');
+    if (options?.include) {
+      include_groups = Object.keys(options.include).filter((key) => options.include[key]);
+    } else {
+      include_groups = ['album', 'single', 'appears_on', 'compilation'];
     }
 
     const query: Record<string, string> = {
       include_groups: include_groups.join(','),
-      limit: options?.limit ? (options.limit as unknown as string) : '20',
-      offset: options?.offset ? (options.offset as unknown as string) : '0'
+      limit: options?.limit?.toString() || '20',
+      offset: options?.offset?.toString() || '0',
+      market: options?.market || 'from_token'
     };
-
-    if (options?.market) {
-      query.market = options.market;
-    }
 
     const res = await this.http.get(`/artists/${id}/albums`, {
       query
@@ -120,9 +99,9 @@ export class ArtistManager extends Manager {
    * @returns {Promise<Track[]>} Returns a promise with an array of {@link Track}s.
    */
   async topTracks(id: string, market?: Markets): Promise<Track[]> {
-    const query: Record<string, string> = {};
-
-    if (market) query.market = market;
+    const query: Record<string, string> = {
+      market: market || 'from_token'
+    };
 
     const res = await this.http.get(`/artists/${id}/top-tracks`, {
       query

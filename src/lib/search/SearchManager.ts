@@ -12,13 +12,13 @@ export class SearchManager extends Manager {
     const types = Object.keys(options.include).filter((key) => options.include[key]);
 
     const query: Record<string, string> = {
-      q: searchQuery
+      q: searchQuery,
+      market: options?.market || 'from_token',
+      limit: options?.limit?.toString() || '20',
+      offset: options?.offset?.toString() || '0',
+      type: types.join(',')
     };
 
-    query.type = types.join(',');
-    if (options?.market) query.market = options.market;
-    if (options?.limit) query.limit = options.limit.toString();
-    if (options?.offset) query.offset = options.offset.toString();
     if (options?.includeExternal) query.include_external = options.includeExternal;
 
     const res = await this.http.get('/search', {
