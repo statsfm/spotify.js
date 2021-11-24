@@ -1,5 +1,12 @@
 import { chunk } from '../../util';
-import { Album } from '../../interfaces/Spotify';
+import {
+  Album,
+  Markets,
+  PagingObject,
+  PagingOptions,
+  Track,
+  NewReleases
+} from '../../interfaces/Spotify';
 import { Manager } from '../Manager';
 
 export class AlbumManager extends Manager {
@@ -30,5 +37,31 @@ export class AlbumManager extends Manager {
     );
 
     return [].concat(...albums);
+  }
+
+  async tracks(
+    id: string,
+    options?: PagingOptions & { market?: Markets }
+  ): Promise<PagingObject<Track>> {
+    const query: Record<string, string> = {
+      limit: options?.limit ? options.limit.toString() : '20',
+      offset: options?.offset ? options.offset.toString() : '0',
+      market: options?.market ? options.market : 'from_token'
+    };
+
+    const res = await this.http.get(`/albums/${id}/tracks`, { query });
+
+    return res.data as PagingObject<Track>;
+  }
+
+  async newReleases(options?: PagingOptions & { country?: Markets }): Promise<NewReleases> {
+    const query: Record<string, string> = {
+      limit: options?.limit?.toString() || '20',
+      offset: options?.offset?.toString() || '0'
+    };
+
+    const res = await this.http.get('/browse/new-releases', { query });
+
+    return res.data as NewReleases;
   }
 }
