@@ -18,6 +18,7 @@ export interface Artist {
   href: string;
   id: string;
   images: Image[];
+  name: string;
   popularity: number;
   type: string;
   uri: string;

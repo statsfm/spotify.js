@@ -1,6 +1,5 @@
 import { Album, Artist, Track } from '.';
 import { Playlist } from './Playlist';
-
 import { PagingObject } from './shared';
 
 export interface SearchItems {
@@ -8,6 +7,7 @@ export interface SearchItems {
   artists: PagingObject<Artist>;
   albums: PagingObject<Album>;
   playlists: PagingObject<Playlist>;
+  // TODO: Add more types
   // shows: PagingObject<>;
   // episodes: PagingObject<>;
 }
