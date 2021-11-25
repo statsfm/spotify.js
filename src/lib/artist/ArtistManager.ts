@@ -67,9 +67,10 @@ export class ArtistManager extends Manager {
     const query: Record<string, string> = {
       include_groups: include_groups.join(','),
       limit: options?.limit?.toString() || '20',
-      offset: options?.offset?.toString() || '0',
-      market: options?.market || 'from_token'
+      offset: options?.offset?.toString() || '0'
     };
+
+    if (options?.market) query.market = options.market;
 
     const res = await this.http.get(`/artists/${id}/albums`, {
       query
@@ -99,9 +100,9 @@ export class ArtistManager extends Manager {
    * @returns {Promise<Track[]>} Returns a promise with an array of {@link Track}s.
    */
   async topTracks(id: string, market?: Markets): Promise<Track[]> {
-    const query: Record<string, string> = {
-      market: market || 'from_token'
-    };
+    const query: Record<string, string> = {};
+
+    if (market) query.market = market;
 
     const res = await this.http.get(`/artists/${id}/top-tracks`, {
       query

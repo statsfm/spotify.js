@@ -45,9 +45,10 @@ export class AlbumManager extends Manager {
   ): Promise<PagingObject<Track>> {
     const query: Record<string, string> = {
       limit: options?.limit ? options.limit.toString() : '20',
-      offset: options?.offset ? options.offset.toString() : '0',
-      market: options?.market ? options.market : 'from_token'
+      offset: options?.offset ? options.offset.toString() : '0'
     };
+
+    if (options.market) query.market = options.market;
 
     const res = await this.http.get(`/albums/${id}/tracks`, { query });
 

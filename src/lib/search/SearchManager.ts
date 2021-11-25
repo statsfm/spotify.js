@@ -13,11 +13,12 @@ export class SearchManager extends Manager {
 
     const query: Record<string, string> = {
       q: searchQuery,
-      market: options?.market || 'from_token',
       limit: options?.limit?.toString() || '20',
       offset: options?.offset?.toString() || '0',
       type: types.join(',')
     };
+
+    if (options?.market) query.market = options.market;
 
     if (options?.includeExternal) query.include_external = options.includeExternal;
 
