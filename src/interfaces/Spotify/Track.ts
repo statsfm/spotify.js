@@ -48,7 +48,7 @@ export interface Track {
   /**
    * Included in the response when a content restriction is applied.
    */
-  restrictions: {
+  restrictions?: {
     reason: 'market' | 'product' | 'explicit';
   };
   /**
@@ -118,7 +118,7 @@ export interface TrackSimplified {
   /**
    * Included in the response when a content restriction is applied.
    */
-  restrictions: {
+  restrictions?: {
     reason: 'market' | 'product' | 'explicit';
   };
   /**
