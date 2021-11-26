@@ -11,6 +11,7 @@ module.exports = {
     camelcase: 'off',
     'no-param-reassign': 'off',
     'jsdoc/require-param': 'off',
+    'jsdoc/require-description-complete-sentence': 'off',
     'no-loops/no-loops': 'off'
   }
 };
