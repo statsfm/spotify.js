@@ -34,3 +34,21 @@ export interface Playlist {
   type: string;
   uri: string;
 }
+
+export interface PlaylistTrack {
+  added_at: string;
+  added_by: {
+    external_urls: ExternalUrls;
+    href: string;
+    id: string;
+    type: string;
+    uri: string;
+    name?: string;
+  };
+  is_local: boolean;
+  primary_color: null;
+  track: Track;
+  video_thumbnail: {
+    url: null;
+  };
+}
