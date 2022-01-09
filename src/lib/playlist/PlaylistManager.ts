@@ -1,3 +1,4 @@
+import { chunk } from '../../util';
 import {
   Markets,
   PagingObject,
@@ -73,5 +74,78 @@ export class PlaylistManager extends Manager {
     const res = await this.http.get(`/playlists/${id}/tracks`, { query });
 
     return res.data as PagingObject<PlaylistTrack>;
+  }
+
+  /**
+   *
+   * @param id Playlist ID.
+   * @param {Array<string>} ids An array of Spotify IDs of the tracks to add
+   * @param {number} position The position to insert the items, a zero-based index. For example, to insert the items in the first position: position=0; to insert the items in the third position: position=2.
+   * If omitted, the items will be appended to the playlist. Items are added in the order they are listed in the query string or request body.
+   */
+  async add(id: string, ids: string[], position?: number): Promise<void> {
+    if (ids?.length <= 0) {
+      throw new Error('Length of ids must be greater than 0');
+    }
+
+    for (let chunk = 0; chunk < ids.length; chunk += 100) {
+      const body: Record<string, unknown> = {};
+
+      body.uris = ids.slice(chunk, chunk + 100).map((id) => `spotify:track:${id}`);
+
+      if (position > 0) body.position = position.toString();
+
+      // eslint-disable-next-line no-await-in-loop
+      await this.http.post(`/playlists/${id}/tracks`, body);
+    }
+
+    // Adding items to a playlist must be done in the right order,
+    // thus this code cannot be used
+    // await Promise.all(
+    //   chunk([...ids], 100).map(async (chunk) => {
+    //     const body: Record<string, unknown> = {};
+
+    //     body.uris = chunk.map((id) => `spotify:track:${id}`);
+
+    //     if (position > 0) body.position = position.toString();
+
+    //     await this.http.post(`/playlists/${id}/tracks`, body);
+    //   })
+    // );
+
+    // TODO: return the right response
+  }
+
+  /**
+   *
+   * @param id Playlist ID.
+   * @param {Array<string>} ids An array of Spotify IDs of the tracks to remove
+   * @param {string} snapshot_id The playlist's snapshot ID against which you want to make the changes.
+   * The API will validate that the specified items exist and in the specified positions and make the changes, even if more recent changes have been made to the playlist.
+   */
+  async remove(id: string, ids: string[], snapshot_id?: string): Promise<void> {
+    if (ids?.length <= 0) {
+      throw new Error('Length of ids must be greater than 0');
+    }
+
+    if (snapshot_id && ids.length > 100) {
+      throw new Error('Snapshot id cannot be used on requests with 100+ tracks');
+    }
+
+    await Promise.all(
+      chunk([...ids], 100).map(async (chunk) => {
+        const body: Record<string, unknown> = {};
+
+        body.tracks = chunk.map((id) => ({
+          uri: `spotify:track:${id}`
+        }));
+
+        if (snapshot_id) body.snapshot_id = snapshot_id.toString();
+
+        await this.http.delete(`/playlists/${id}/tracks`, body);
+      })
+    );
+
+    // TODO: return the right response
   }
 }
