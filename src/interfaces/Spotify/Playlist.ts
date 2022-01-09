@@ -1,4 +1,4 @@
-import { PagingObject } from 'src';
+import { PagingObject } from './shared';
 import { ExternalUrls, Followers, Image, Track, UserPublic } from '.';
 
 export interface SimplifiedPlaylist {
