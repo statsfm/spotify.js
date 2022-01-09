@@ -64,6 +64,9 @@ export class PlaylistManager extends Manager {
   ): Promise<PagingObject<PlaylistTrack>> {
     const query: Record<string, string> = {};
 
+    if (options?.limit) query.limit = options.offset.toString();
+    if (options?.offset) query.offset = options.offset.toString();
+
     if (options?.market) query.market = options.market;
     if (options?.fields) query.fields = options.fields;
 
