@@ -330,13 +330,18 @@ export class HttpClient {
 
   /**
    * @param {string} slug The slug to delete.
+   * @param {any} data Body data.
    * @param {{Record<string, string> & RequestInit}} options Options.
    * @returns {Promise<Response>} Returns a promise with the response.
    */
   async delete(
     slug: string,
+    data: any,
     options?: { query?: Record<string, string> } & AxiosRequestConfig
   ): Promise<AxiosResponse> {
-    return await this.client.delete(this.getURL(slug, options?.query), options);
+    return await this.client.delete(this.getURL(slug, options?.query), {
+      ...options,
+      data
+    });
   }
 }
