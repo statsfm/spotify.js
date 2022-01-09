@@ -1,4 +1,4 @@
-import { Markets } from 'src';
+import { Markets } from './shared';
 
 export interface SearchOptions {
   /**
