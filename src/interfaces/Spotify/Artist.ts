@@ -12,7 +12,6 @@ export interface ArtistSimplified {
 }
 
 export interface Artist {
-  name: string;
   external_urls: ExternalUrls;
   followers: Followers;
   genres: string[];
