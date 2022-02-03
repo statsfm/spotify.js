@@ -1,13 +1,13 @@
 {
-  "name": "@spotistats/spotify.js",
-  "version": "1.7.0",
+  "name": "@statsfm/spotify.js",
+  "version": "1.7.1",
   "description": "Node wrapper for Spotify, written in TS.",
   "main": "dist/index.js",
   "private": false,
   "publishConfig": {
     "access": "public"
   },
-  "repository": "https://github.com/spotistatsapp/spotify.js",
+  "repository": "https://github.com/statsfm/spotify.js",
   "author": "Sting Alleman <stingalleman@icloud.com>",
   "license": "GPL-3.0",
   "scripts": {
