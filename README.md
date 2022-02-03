@@ -1,8 +1,8 @@
 # spotify.js
 
-[![CI](https://github.com/backtrackapp/spotify.js/actions/workflows/lint.yml/badge.svg)](https://github.com/backtrackapp/spotify.js/actions/workflows/lint.yml)
+[![CI](https://github.com/statsfm/spotify.js/actions/workflows/lint.yml/badge.svg)](https://github.com/statsfm/spotify.js/actions/workflows/lint.yml)
 
-An API wrapper for Spotify, written in Typescript. Made for [Spotistats for Spotify](https://spotistats.app/).
+An API wrapper for Spotify, written in Typescript. Made for [Stats.fm (formerly known as Spotistats for Spotify](https://stats.fm/).
 
 [Documentation](https://spotify.js.org/).
 
@@ -17,13 +17,13 @@ An API wrapper for Spotify, written in Typescript. Made for [Spotistats for Spot
 
 ```bash
 # using yarn
-yarn add @spotistats/spotify.js
+yarn add @statsfm/spotify.js
 # or with npm
-npm install @spotistats/spotify.js
+npm install @statsfm/spotify.js
 ```
 
 ```ts
-import { SpotifyAPI } from '@spotistats/spotify.js';
+import { SpotifyAPI } from '@statsfm/spotify.js';
 
 const api = new SpotifyAPI({
   clientCredentials: {

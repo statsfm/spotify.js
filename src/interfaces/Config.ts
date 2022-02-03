@@ -24,7 +24,7 @@ export interface SpotifyConfig {
      */
     proxy?: AxiosProxyConfig;
     /**
-     * Set a custom user agent. Default: "spotify.js/<version> https://github.com/backtrackapp/spotify.js".
+     * Set a custom user agent. Default: "spotify.js/<version> https://github.com/statsfm/spotify.js".
      */
     userAgent?: string;
     /**
