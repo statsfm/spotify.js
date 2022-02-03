@@ -10,14 +10,15 @@
     "sourceMap": true,
     "baseUrl": "./",
     "lib": ["ES2020"],
+    "rootDir": "src",
     "declaration": true,
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
     "noErrorTruncation": true,
     "skipLibCheck": true,
     "resolveJsonModule": true,
-    "outDir": "dist/",
+    "outDir": "dist/"
   },
   "include": ["src/**/*"],
-  "exclude": ["node_modules"],
+  "exclude": ["node_modules"]
 }

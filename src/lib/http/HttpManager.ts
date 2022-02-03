@@ -15,7 +15,6 @@ import {
   RatelimitError
 } from '../../interfaces/Errors';
 import { PrivateConfig, SpotifyConfig } from '../../interfaces/Config';
-import pkgJson from '../../../package.json';
 
 export class HttpClient {
   protected baseURL = 'https://api.spotify.com/v1';
@@ -215,8 +214,7 @@ export class HttpClient {
         // 'Content-Type': 'application/json',
         // Accept: 'application/json',
         'User-Agent':
-          this.config.http?.userAgent ||
-          `spotify.js/${pkgJson.version} https://github.com/statsfm/spotify.js`,
+          this.config.http?.userAgent || `spotify.js https://github.com/statsfm/spotify.js`,
         ...config.headers
       };
 
