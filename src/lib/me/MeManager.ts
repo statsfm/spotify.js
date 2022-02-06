@@ -1,3 +1,4 @@
+import { PlayerState } from '../../interfaces/Spotify/Player';
 import {
   RecentlyPlayed,
   UserPrivate,
@@ -83,6 +84,18 @@ export class MeManager extends Manager {
     }));
 
     return json as CursorPagingObject<RecentlyPlayed>;
+  }
+
+  /**
+   * @description Get information about the user’s current playback state, including track or episode, progress, and active device.
+   * @returns {Promise} Returns a promise with the current playback state.
+   */
+  async getPlaybackState(): Promise<PlayerState> {
+    const res = await this.http.get(`/me/player`);
+
+    const json = res.data;
+
+    return json as PlayerState;
   }
 
   /**
