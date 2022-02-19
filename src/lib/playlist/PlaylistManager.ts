@@ -41,6 +41,25 @@ export class PlaylistManager extends Manager {
   }
 
   /**
+   * Create a playlist for a Spotify user. (The playlist will be empty until you add tracks)
+   * @param {string} userId The user's Spotify user ID.
+   * @returns {Promise<Playlist>} A playlist object.
+   */
+  async create(
+    userId: string,
+    data: {
+      name: string;
+      public: boolean;
+      collaborative: boolean;
+      description: string;
+    }
+  ): Promise<Playlist> {
+    const res = await this.http.post(`/users/${userId}/playlists`, data);
+
+    return res.data as Playlist;
+  }
+
+  /**
    *
    * @param id Playlist ID.
    * @param options Object with additional options.
