@@ -6,6 +6,7 @@ import axios, { AxiosError, AxiosInstance, AxiosRequestConfig, AxiosResponse } f
 import { URL, URLSearchParams } from 'url';
 import * as https from 'https';
 import { ClientRequest } from 'http';
+import axiosBetterStacktrace from 'axios-better-stacktrace';
 import {
   AuthError,
   BadRequestError,
@@ -205,6 +206,7 @@ export class HttpClient {
       };
     }
     const client = axios.create(config);
+    axiosBetterStacktrace(client);
 
     // request interceptor
     client.interceptors.request.use(async (config) => {
@@ -232,7 +234,8 @@ export class HttpClient {
           // throw error if bad request
           if (res.status === 400) {
             throw new BadRequestError(
-              `bad request\n${JSON.stringify(err.response.data, null, ' ')}`
+              `bad request\n${JSON.stringify(err.response.data, null, ' ')}`,
+              err.stack
             );
           }
 
@@ -243,24 +246,25 @@ export class HttpClient {
                 res.data,
                 null,
                 ' '
-              )}`
+              )}`,
+              err.stack
             );
           }
 
           // throw error if 404
           if (res.status === 404) {
-            throw new NotFoundError(`not found (${res.config.url})`);
+            throw new NotFoundError(`not found (${res.config.url})`, err.stack);
           }
 
           if (res.status === 401) {
-            throw new AuthError('unauthorized');
+            throw new AuthError('unauthorized', err.stack);
             //   await this.handleAuth();
             //   const res = await client.request(err.config);
             //   return res;
           }
 
           if (res.status === 500) {
-            throw new InternalServerError('internal server error');
+            throw new InternalServerError('internal server error', err.stack);
           }
 
           if (res.status === 429) {
@@ -268,14 +272,15 @@ export class HttpClient {
               const retry = res.headers[`retry-after`] as unknown as number; // get retry time
 
               // log ratelimit (if enabled)
-              if (this.config.logRetry || this.config.logRetry === undefined)
+              if (this.config.logRetry || this.config.logRetry === undefined) {
                 // eslint-disable-next-line no-console
                 console.error(`hit ratelimit, retrying in ${retry} second(s)`);
+              }
 
               await this.sleep(retry * 1000); // wait for retry time
               res = await client.request(err.config); // retry request
             } else {
-              throw new RatelimitError('hit ratelimit');
+              throw new RatelimitError('hit ratelimit', err.stack);
             }
             return res;
           }
