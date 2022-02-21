@@ -16,6 +16,14 @@ export interface SpotifyConfig {
    */
   logRetry?: boolean;
   /**
+   * Retry request if the response code is in the 500 range. Default: true
+   */
+  retry5xx?: boolean;
+  /**
+   * Amount of retries. Default: 3
+   */
+  retry5xxAmount?: number;
+  /**
    * HTTP options.
    */
   http?: {

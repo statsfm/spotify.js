@@ -22,7 +22,7 @@ export class HttpClient {
 
   protected tokenURL = 'https://accounts.spotify.com/api/token';
 
-  protected client = this.create();
+  protected client = this.create({ resInterceptor: true });
 
   constructor(protected config: SpotifyConfig, protected privateConfig: PrivateConfig) {}
 
@@ -184,7 +184,7 @@ export class HttpClient {
   }
 
   // create axios client, set interceptors, handle errors & auth
-  private create(): AxiosInstance {
+  private create(options: { resInterceptor?: boolean }): AxiosInstance {
     const config: AxiosRequestConfig = {
       proxy: this.config.http?.proxy
     };
@@ -223,72 +223,116 @@ export class HttpClient {
       return config;
     });
 
-    // response interceptor
-    client.interceptors.response.use(
-      (config) => config,
-      // error handler
-      async (err: AxiosError) => {
-        let res = err.response;
+    if (options.resInterceptor || options.resInterceptor === undefined) {
+      // response interceptor
+      client.interceptors.response.use(
+        (config) => config,
+        // error handler
+        async (err: AxiosError) => {
+          let res = err.response;
 
-        if (res?.status) {
-          // throw error if bad request
-          if (res.status === 400) {
-            throw new BadRequestError(
-              `bad request\n${JSON.stringify(err.response.data, null, ' ')}`,
-              err.stack
-            );
-          }
-
-          // throw error if forbideden
-          if (res.status === 403) {
-            throw new ForbiddenError(
-              `forbidden, are you sure you have the right scopes?\n${JSON.stringify(
-                res.data,
-                null,
-                ' '
-              )}`,
-              err.stack
-            );
-          }
-
-          // throw error if 404
-          if (res.status === 404) {
-            throw new NotFoundError(`not found (${res.config.url})`, err.stack);
-          }
-
-          if (res.status === 401) {
-            throw new AuthError('unauthorized', err.stack);
-            //   await this.handleAuth();
-            //   const res = await client.request(err.config);
-            //   return res;
-          }
-
-          if (res.status === 500) {
-            throw new InternalServerError('internal server error', err.stack);
-          }
-
-          if (res.status === 429) {
-            if (this.config.retry || this.config.retry === undefined) {
-              const retry = res.headers[`retry-after`] as unknown as number; // get retry time
-
-              // log ratelimit (if enabled)
-              if (this.config.logRetry || this.config.logRetry === undefined) {
-                // eslint-disable-next-line no-console
-                console.error(`hit ratelimit, retrying in ${retry} second(s)`);
-              }
-
-              await this.sleep(retry * 1000); // wait for retry time
-              res = await client.request(err.config); // retry request
-            } else {
-              throw new RatelimitError('hit ratelimit', err.stack);
+          if (res?.status) {
+            // throw error if bad request
+            if (res.status === 400) {
+              throw new BadRequestError(
+                `bad request\n${JSON.stringify(err.response.data, null, ' ')}`,
+                err.stack
+              );
             }
-            return res;
-          }
-        }
 
-        throw err;
-      }
-    );
+            // throw error if forbideden
+            if (res.status === 403) {
+              throw new ForbiddenError(
+                `forbidden, are you sure you have the right scopes?\n${JSON.stringify(
+                  res.data,
+                  null,
+                  ' '
+                )}`,
+                err.stack
+              );
+            }
+
+            // throw error if 404
+            if (res.status === 404) {
+              throw new NotFoundError(`not found (${res.config.url})`, err.stack);
+            }
+
+            if (res.status === 401) {
+              throw new AuthError('unauthorized', err.stack);
+              //   await this.handleAuth();
+              //   const res = await client.request(err.config);
+              //   return res;
+            }
+
+            // 5xx
+            if (res.status.toString().startsWith('5')) {
+              if (this.config.retry5xx || this.config.retry5xx === undefined) {
+                // set default
+                if (!this.config.retry5xxAmount) this.config.retry5xxAmount = 3;
+
+                // create new axios client without interceptors
+                const nClient = this.create({ resInterceptor: false });
+
+                // retry x times
+                for (let i = 0; i < this.config.retry5xxAmount; i++) {
+                  console.log(
+                    `${res.status} error, retrying... (${i + 1}/${this.config.retry5xxAmount})`
+                  );
+
+                  // timeout one second
+                  // eslint-disable-next-line no-await-in-loop
+                  await this.sleep(1 * 1000); // wait for retry time
+
+                  // disable error checking
+                  // err.config.validateStatus = (): boolean => true;
+
+                  try {
+                    // retry request
+                    // eslint-disable-next-line no-await-in-loop
+                    const nRes = await nClient.request(err.config);
+
+                    // starts with 200, successful
+                    if (nRes.status.toString().startsWith('2')) {
+                      return nRes;
+                    }
+                  } catch (err) {
+                    if (i === this.config.retry5xxAmount - 1) {
+                      throw new Error(
+                        `${res.status} error, retried ${this.config.retry5xxAmount} times\n${err.stack}`
+                      );
+                    }
+                  }
+                }
+              }
+            }
+
+            // if (res.status === 500) {
+            //   throw new InternalServerError('internal server error', err.stack);
+            // }
+
+            if (res.status === 429) {
+              if (this.config.retry || this.config.retry === undefined) {
+                const retry = res.headers[`retry-after`] as unknown as number; // get retry time
+
+                // log ratelimit (if enabled)
+                if (this.config.logRetry || this.config.logRetry === undefined) {
+                  // eslint-disable-next-line no-console
+                  console.error(`hit ratelimit, retrying in ${retry} second(s)`);
+                }
+
+                await this.sleep(retry * 1000); // wait for retry time
+                res = await client.request(err.config); // retry request
+              } else {
+                throw new RatelimitError('hit ratelimit', err.stack);
+              }
+              return res;
+            }
+          }
+
+          throw err;
+        }
+      );
+    }
 
     return client;
   }
