@@ -6,7 +6,8 @@ import {
   Track,
   CursorPagingObject,
   PagingObject,
-  TopOptions
+  TopOptions,
+  Playlist
 } from '../../interfaces/Spotify';
 
 import { Manager } from '../Manager';
@@ -128,5 +129,21 @@ export class MeManager extends Manager {
     await this.http.delete(`/me/tracks`, {
       query: { ids: ids.join(',') }
     });
+  }
+
+  async playlists(options?: {
+    limit?: number;
+    offset?: number;
+  }): Promise<CursorPagingObject<Playlist>> {
+    const query: Record<string, string> = {};
+
+    if (options?.limit) query.limit = options.limit.toString();
+    if (options?.offset) query.offset = options.offset.toString();
+
+    const res = await this.http.get(`/me/playlists`, {
+      query
+    });
+
+    return res.data as CursorPagingObject<Playlist>;
   }
 }
