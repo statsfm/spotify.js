@@ -1,6 +1,6 @@
 {
   "name": "@statsfm/spotify.js",
-  "version": "1.8.1",
+  "version": "1.8.2",
   "description": "Node wrapper for Spotify, written in TS.",
   "main": "dist/index.js",
   "private": false,
