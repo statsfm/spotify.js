@@ -146,4 +146,12 @@ export class MeManager extends Manager {
 
     return res.data as CursorPagingObject<Playlist>;
   }
+
+  /**
+   * @description Remove the current user as a follower of a playlist.
+   * @param {string} id The Spotify ID of the playlist to unfollow.
+   */
+  async unfollowPlaylist(id: string): Promise<void> {
+    await this.http.delete(`/playlists/${id}/followers`, {});
+  }
 }
