@@ -317,7 +317,11 @@ export class HttpClient {
                 // log ratelimit (if enabled)
                 if (this.config.logRetry || this.config.logRetry === undefined) {
                   // eslint-disable-next-line no-console
-                  console.error(`hit ratelimit, retrying in ${retry} second(s)`);
+                  console.error(
+                    `hit ratelimit, retrying in ${'retry'} second(s), client id: ${
+                      this.config?.clientCredentials?.clientId
+                    }, path: ${err.request.path}`
+                  );
                 }
 
                 await this.sleep(retry * 1000); // wait for retry time
