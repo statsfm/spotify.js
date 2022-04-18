@@ -320,7 +320,7 @@ export class HttpClient {
                   console.error(
                     `hit ratelimit, retrying in ${'retry'} second(s), client id: ${
                       this.config?.clientCredentials?.clientId
-                    }, path: ${err.request.path}`
+                    }, localAddress: ${this.config.http.localAddress}, path: ${err.request.path}`
                   );
                 }
 
