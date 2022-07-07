@@ -249,7 +249,7 @@ module.exports = function httpAdapter(config) {
         }
       }
 
-      if (!res.statusCode !== 200) {
+      if (res.statusCode !== 200) {
         console.log('resume!');
         res.resume();
       }
