@@ -250,7 +250,7 @@ module.exports = function httpAdapter(config) {
       }
 
       if (res.statusCode !== 200) {
-        console.log('resume!');
+        console.log('Experimental feature: res.statusCode !== 200 -> res.resume()');
         res.resume();
       }
 

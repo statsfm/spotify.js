@@ -7,7 +7,7 @@ import { URL, URLSearchParams } from 'url';
 import * as https from 'https';
 import { ClientRequest } from 'http';
 import axiosBetterStacktrace from 'axios-better-stacktrace';
-import axiosResumHttpAdapter from './axiosResumHttpAdapter';
+import axiosResumeHttpAdapter from './axiosResumeHttpAdapter';
 import {
   AuthError,
   BadRequestError,
@@ -187,7 +187,7 @@ export class HttpClient {
   // create axios client, set interceptors, handle errors & auth
   private create(options: { resInterceptor?: boolean }): AxiosInstance {
     const config: AxiosRequestConfig = {
-      adapter: axiosResumHttpAdapter,
+      adapter: axiosResumeHttpAdapter,
       proxy: this.config.http?.proxy
     };
 
