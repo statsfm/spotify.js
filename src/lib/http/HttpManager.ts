@@ -235,7 +235,7 @@ export class HttpClient {
             // throw error if bad request
             if (res.status === 400) {
               throw new BadRequestError(
-                `bad request\n${JSON.stringify(err.response.data, null, ' ')}`,
+                `bad request (${err.config.url})\n${JSON.stringify(err.response.data, null, ' ')}`,
                 err.stack
               );
             }
@@ -243,11 +243,9 @@ export class HttpClient {
             // throw error if forbideden
             if (res.status === 403) {
               throw new ForbiddenError(
-                `forbidden, are you sure you have the right scopes?\n${JSON.stringify(
-                  res.data,
-                  null,
-                  ' '
-                )}`,
+                `forbidden, are you sure you have the right scopes? (${
+                  err.config.url
+                })\n${JSON.stringify(res.data, null, ' ')}`,
                 err.stack
               );
             }
@@ -258,7 +256,7 @@ export class HttpClient {
             }
 
             if (res.status === 401) {
-              throw new AuthError('unauthorized', err.stack);
+              throw new AuthError(`unauthorized (${err.config.url})`, err.stack);
               //   await this.handleAuth();
               //   const res = await client.request(err.config);
               //   return res;
@@ -327,7 +325,7 @@ export class HttpClient {
                 await this.sleep(retry * 1000); // wait for retry time
                 res = await client.request(err.config); // retry request
               } else {
-                throw new RatelimitError('hit ratelimit', err.stack);
+                throw new RatelimitError(`hit ratelimit (${err.config.url})`, err.stack);
               }
               return res;
             }
