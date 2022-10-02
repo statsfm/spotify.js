@@ -5,7 +5,12 @@ export interface SpotifyConfig {
     clientId?: string;
     clientSecret?: string;
   };
+  /**
+   * @deprecated Renamed to `accessToken` because of a typo. Will be removed in the next major version.
+   */
   acccessToken?: string;
+  accessToken?: string;
+
   refreshToken?: string;
   /**
    * Retry request when ratelimit is hit.
