@@ -86,14 +86,14 @@ export class HttpClient {
       }
     }
 
-    this.config.acccessToken = res.data.access_token; // save access token
+    this.config.accessToken = res.data.access_token; // save access token
 
     // save expire now
     this.privateConfig.tokenExpire = new Date(
       new Date().setSeconds(new Date().getSeconds() + 3600)
     );
 
-    return this.config.acccessToken; // return token
+    return this.config.accessToken; // return token
   }
 
   /**
@@ -133,13 +133,13 @@ export class HttpClient {
       }
     }
 
-    this.config.acccessToken = res.data.access_token;
+    this.config.accessToken = res.data.access_token;
 
     this.privateConfig.tokenExpire = new Date(
       new Date().setSeconds(new Date().getSeconds() + 3600)
     );
 
-    return this.config.acccessToken;
+    return this.config.accessToken;
   }
 
   /**
@@ -147,15 +147,15 @@ export class HttpClient {
    * @returns {string} Returns a auth token.
    */
   private async handleAuth(): Promise<string> {
-    if (this.config.acccessToken) {
+    if (this.config.accessToken) {
       // check if token is expired
       if (new Date() >= this.privateConfig.tokenExpire) {
-        this.config.acccessToken = undefined;
+        this.config.accessToken = undefined;
         return await this.handleAuth();
       }
 
       // return already defined access token
-      return this.config.acccessToken;
+      return this.config.accessToken;
     }
 
     // refresh token

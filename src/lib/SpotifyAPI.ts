@@ -31,6 +31,14 @@ export class SpotifyAPI {
 
   constructor(config: SpotifyConfig) {
     this.config = config;
+
+    // TODO: remove for v2
+    // eslint-disable-next-line deprecation/deprecation
+    if (!this.config.accessToken && config.acccessToken) {
+      // eslint-disable-next-line deprecation/deprecation
+      this.config.accessToken = config.acccessToken;
+    }
+
     this.tracks = new TrackManager(this.config, this.privateConfig);
     this.albums = new AlbumManager(this.config, this.privateConfig);
     this.artists = new ArtistManager(this.config, this.privateConfig);
