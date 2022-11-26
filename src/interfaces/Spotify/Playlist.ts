@@ -18,23 +18,6 @@ export interface SimplifiedPlaylist {
   uri: string;
 }
 
-export interface Playlist {
-  collaborative: boolean;
-  description?: string;
-  external_urls: ExternalUrls;
-  followers: Followers;
-  href: string;
-  id: string;
-  images: Image[];
-  name: string;
-  owner: UserPublic;
-  public: boolean;
-  snapshot_id: string;
-  tracks: PagingObject<Track>;
-  type: string;
-  uri: string;
-}
-
 export interface PlaylistTrack {
   added_at: string;
   added_by: {
@@ -51,4 +34,20 @@ export interface PlaylistTrack {
   video_thumbnail: {
     url: null;
   };
+}
+export interface Playlist {
+  collaborative: boolean;
+  description?: string;
+  external_urls: ExternalUrls;
+  followers: Followers;
+  href: string;
+  id: string;
+  images: Image[];
+  name: string;
+  owner: UserPublic;
+  public: boolean;
+  snapshot_id: string;
+  tracks: PagingObject<PlaylistTrack>;
+  type: string;
+  uri: string;
 }
