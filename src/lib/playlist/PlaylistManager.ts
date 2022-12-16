@@ -167,4 +167,21 @@ export class PlaylistManager extends Manager {
 
     // TODO: return the right response
   }
+
+  /**
+   *
+   * @param id Playlist ID.
+   * @param imageData Base64 encoded JPEG image data, maximum image payload size is 256 KB.
+   */
+  async addCoverImage(id: string, imageData: string): Promise<void> {
+    if (id.length === 0) {
+      throw new Error('Length of id must be greater than 0');
+    }
+
+    await this.http.put(`/playlists/${id}/images`, imageData, {
+      headers: {
+        'Content-Type': 'image/jpeg'
+      }
+    });
+  }
 }
