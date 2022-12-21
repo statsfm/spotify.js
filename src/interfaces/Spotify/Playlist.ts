@@ -45,6 +45,7 @@ export interface Playlist {
   images: Image[];
   name: string;
   owner: UserPublic;
+  primary_color: string | null;
   public: boolean;
   snapshot_id: string;
   tracks: PagingObject<PlaylistTrack>;
