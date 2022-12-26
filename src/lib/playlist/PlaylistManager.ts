@@ -1,5 +1,6 @@
 import { chunk } from '../../util';
 import {
+  FeaturedPlaylist,
   Markets,
   PagingObject,
   PagingOptions,
@@ -183,5 +184,36 @@ export class PlaylistManager extends Manager {
         'Content-Type': 'image/jpeg'
       }
     });
+  }
+
+  /**
+   * Get a list of Spotify featured playlists (shown, for example, on a Spotify player's 'Browse' tab).
+   *
+   * @param options Object with additional options
+   * @param options.country An ISO 3166-1 alpha-2 country code or the string from_token.
+   * @param options.locale The desired language, consisting of an ISO 639 language code and an ISO 3166-1 alpha-2 country code, joined by an underscore.
+   * @param options.timestamp A timestamp in ISO 8601 format: yyyy-MM-ddTHH:mm:ss. Use this parameter to specify the user's local time to get results tailored for that specific date and time in the day.
+   * @param options.limit The maximum number of items to return. Default: 20. Minimum: 1. Maximum: 50.
+   * @param options.offset The index of the first item to return. Default: 0 (the first object). Use with limit to get the next set of items.
+   * @returns {Promise<FeaturedPlaylist>} A list of featured playlists
+   */
+  async getFeatured(
+    options?: PagingOptions & {
+      country?: string;
+      locale?: string;
+      timestamp?: string;
+    }
+  ): Promise<FeaturedPlaylist> {
+    const res = await this.http.get('/browse/featured-playlists', {
+      query: {
+        ...(options?.offset && { offset: String(options.offset) }),
+        ...(options?.limit && { limit: String(options.limit) }),
+        ...(options?.country && { country: options.country }),
+        ...(options?.locale && { locale: options.locale }),
+        ...(options?.timestamp && { timestamp: options.timestamp })
+      }
+    });
+
+    return res.data as FeaturedPlaylist;
   }
 }
