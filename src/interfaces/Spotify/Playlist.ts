@@ -51,3 +51,8 @@ export interface Playlist {
   type: string;
   uri: string;
 }
+
+export interface FeaturedPlaylist {
+  message: string;
+  playlists: PagingObject<SimplifiedPlaylist>;
+}
