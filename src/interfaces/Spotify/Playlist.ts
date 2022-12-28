@@ -53,6 +53,5 @@ export interface Playlist {
 }
 
 export interface FeaturedPlaylist {
-  message: string;
   playlists: PagingObject<SimplifiedPlaylist>;
 }

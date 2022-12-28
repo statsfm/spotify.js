@@ -214,6 +214,11 @@ export class PlaylistManager extends Manager {
       }
     });
 
-    return res.data as FeaturedPlaylist;
+    // `message` is a property used internally by the Spotify API.
+    // It is not a part of the official documented API response and should not be returned.
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { message, ...featuredPlaylist } = res.data;
+
+    return featuredPlaylist as FeaturedPlaylist;
   }
 }
