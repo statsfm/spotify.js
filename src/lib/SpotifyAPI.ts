@@ -4,6 +4,7 @@ import { ArtistManager } from './artist/ArtistManager';
 import { AudioManager } from './audio/AudioManager';
 import { MeManager } from './me/MeManager';
 import { PlaylistManager } from './playlist/PlaylistManager';
+import { RecommendationsManager } from './recommendations/RecommendationsManager';
 import { SearchManager } from './search/SearchManager';
 import { TrackManager } from './track/TrackManager';
 import { UserManager } from './user/UserManager';
@@ -20,6 +21,8 @@ export class SpotifyAPI {
   me: MeManager;
 
   search: SearchManager;
+
+  recommendations: RecommendationsManager;
 
   audio: AudioManager;
 
@@ -45,6 +48,7 @@ export class SpotifyAPI {
     this.users = new UserManager(this.config, this.privateConfig);
     this.me = new MeManager(this.config, this.privateConfig);
     this.search = new SearchManager(this.config, this.privateConfig);
+    this.recommendations = new RecommendationsManager(this.config, this.privateConfig);
     this.audio = new AudioManager(this.config, this.privateConfig);
     this.playlist = new PlaylistManager(this.config, this.privateConfig);
   }
