@@ -8,15 +8,22 @@ export class RecommendationsManager extends Manager {
    * @returns {Promise<RecommendationsResult>} Returns a promise with all recommended tracks and seed options {@link RecommendationsResult}.
    */
   async get(options: RecommendationsFilterOptions): Promise<RecommendationsResult> {
-    const query: Record<string, string | number> = {
-      ...options, // TODO: parse numbers to strings
-      seed_tracks: options.seed_tracks?.join(','),
-      seed_artists: options.seed_artists?.join(','),
-      seed_genres: options.seed_genres?.join(',')
-    };
+    const query: Record<string, string> = {};
+    Object.entries(options).forEach(([key, value]) => {
+      query[key] = Number.isNaN(value) ? value : value.toString();
+    });
+
+    if (Array.isArray(options.seed_tracks)) {
+      query.seed_tracks = options.seed_tracks?.join(',');
+    }
+    if (Array.isArray(options.seed_artists)) {
+      query.seed_artists = options.seed_artists?.join(',');
+    }
+    if (Array.isArray(options.seed_genres)) {
+      query.seed_genres = options.seed_genres?.join(',');
+    }
 
     const res = await this.http.get('/recommendations', {
-      // @ts-expect-error expect numbers as values
       query
     });
 
