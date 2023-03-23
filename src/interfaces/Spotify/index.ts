@@ -13,3 +13,4 @@ export * from './AudioFeatures';
 export * from './NewReleases';
 export * from './Player';
 export * from './Recommendations';
+export * from './Library';

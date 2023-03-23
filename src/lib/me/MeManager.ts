@@ -8,7 +8,8 @@ import {
   PagingObject,
   TopOptions,
   Playlist,
-  Markets
+  Markets,
+  LibraryTrack
 } from '../../interfaces/Spotify';
 
 import { Manager } from '../Manager';
@@ -108,7 +109,7 @@ export class MeManager extends Manager {
     market?: Markets;
     limit?: number;
     offset?: number;
-  }): Promise<CursorPagingObject<Playlist>> {
+  }): Promise<CursorPagingObject<LibraryTrack>> {
     const query: Record<string, string> = {};
 
     if (options?.market) query.market = options.market.toString();
@@ -119,7 +120,7 @@ export class MeManager extends Manager {
       query
     });
 
-    return res.data as CursorPagingObject<Playlist>;
+    return res.data as CursorPagingObject<LibraryTrack>;
   }
 
   /**
