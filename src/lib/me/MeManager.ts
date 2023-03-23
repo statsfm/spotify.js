@@ -7,7 +7,8 @@ import {
   CursorPagingObject,
   PagingObject,
   TopOptions,
-  Playlist
+  Playlist,
+  Markets
 } from '../../interfaces/Spotify';
 
 import { Manager } from '../Manager';
@@ -97,6 +98,28 @@ export class MeManager extends Manager {
     const json = res.data;
 
     return json as PlayerState;
+  }
+
+  /**
+   * @description Check if one or more tracks is saved in the current user's library. (required scropes: user-library-read).
+   * @returns {Promise<boolean[]>} Returns a promise with the an array of booleans.
+   */
+  async savedTracks(options?: {
+    market?: Markets;
+    limit?: number;
+    offset?: number;
+  }): Promise<CursorPagingObject<Playlist>> {
+    const query: Record<string, string> = {};
+
+    if (options?.market) query.market = options.market.toString();
+    if (options?.limit) query.limit = options.limit.toString();
+    if (options?.offset) query.offset = options.offset.toString();
+
+    const res = await this.http.get(`/me/tracks`, {
+      query
+    });
+
+    return res.data as CursorPagingObject<Playlist>;
   }
 
   /**
