@@ -256,7 +256,10 @@ export class HttpClient {
             }
 
             if (res.status === 401) {
-              throw new AuthError(`unauthorized (${err.config.url}) ${res.data}`, err.stack);
+              throw new AuthError(
+                `unauthorized (${err.config.url}) ${JSON.stringify(res.data, null, ' ')}`,
+                err.stack
+              );
               //   await this.handleAuth();
               //   const res = await client.request(err.config);
               //   return res;
