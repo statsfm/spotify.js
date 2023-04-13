@@ -312,6 +312,9 @@ export class HttpClient {
             // }
 
             if (res.status === 429) {
+              if (this.config.logRetry) {
+                console.log(res);
+              }
               if (this.config.retry || this.config.retry === undefined) {
                 const retry = res.headers[`retry-after`] as unknown as number; // get retry time
 
@@ -319,9 +322,7 @@ export class HttpClient {
                 if (this.config.logRetry || this.config.logRetry === undefined) {
                   // eslint-disable-next-line no-console
                   console.error(
-                    `hit ratelimit, retrying in ${'retry'} second(s), client id: ${
-                      this.config?.clientCredentials?.clientId
-                    }, localAddress: ${this.config.http.localAddress}, path: ${err.request.path}`
+                    `hit ratelimit, retrying in ${retry} second(s), client id: ${this.config?.clientCredentials?.clientId}, localAddress: ${this.config.http.localAddress}, path: ${err.request.path}`
                   );
                 }
 
