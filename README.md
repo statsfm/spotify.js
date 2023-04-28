@@ -49,7 +49,3 @@ const tracks = await api.tracks
   })
   .catch(console.error);
 ```
-
-## Maintainers
-
-- [@stingalleman](https://github.com/stingalleman)
