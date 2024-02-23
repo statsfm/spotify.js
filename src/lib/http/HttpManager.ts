@@ -11,7 +11,6 @@ import {
   AuthError,
   BadRequestError,
   ForbiddenError,
-  InternalServerError,
   NotFoundError,
   RatelimitError
 } from '../../interfaces/Errors';

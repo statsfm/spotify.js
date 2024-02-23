@@ -2,7 +2,7 @@ import { Artist, ArtistSimplified } from './Artist';
 import { ExternalUrls, ExternalIds, PagingObject } from './shared';
 import { Copyright } from './shared/Copyrights';
 import { Image } from './shared/Image';
-import { Track, TrackSimplified } from './Track';
+import { TrackSimplified } from './Track';
 
 export interface AlbumBase {
   /**
