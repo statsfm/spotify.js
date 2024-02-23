@@ -1,7 +1,8 @@
 import { Artist, ArtistSimplified } from './Artist';
-import { ExternalUrls, ExternalIds } from './shared';
+import { ExternalUrls, ExternalIds, PagingObject } from './shared';
+import { Copyright } from './shared/Copyrights';
 import { Image } from './shared/Image';
-import { Track } from './Track';
+import { Track, TrackSimplified } from './Track';
 
 export interface AlbumBase {
   /**
@@ -72,6 +73,18 @@ export interface AlbumBase {
    * Known external IDs for the track.
    */
   external_ids?: ExternalIds;
+  /**
+   * The label for the album.
+   */
+  label: string;
+  /**
+   * The genres of the album.
+   */
+  genres: string[];
+  /**
+   * The copyright statements of the album.
+   */
+  copyrights: Copyright[];
 }
 
 export interface AlbumSimplified extends AlbumBase {
@@ -94,13 +107,5 @@ export interface Album extends AlbumBase {
   /**
    * The tracks of the album.
    */
-  tracks: {
-    href: string;
-    items: Track[];
-    limit: number;
-    next: string;
-    offset: number;
-    previous: string;
-    total: number;
-  };
+  tracks: PagingObject<TrackSimplified>;
 }
