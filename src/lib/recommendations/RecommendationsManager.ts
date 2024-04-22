@@ -23,7 +23,7 @@ export class RecommendationsManager extends Manager {
       query.seed_genres = options.seed_genres?.join(',');
     }
 
-    const res = await this.http.get('/recommendations', {
+    const res = await this.http.get('/v1/recommendations', {
       query
     });
 

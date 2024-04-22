@@ -9,7 +9,7 @@ export class AudioManager extends Manager {
    * @returns {Promise<AudioFeatures>} Returns a promise with a {@link AudioFeatures}.
    */
   async feature(id: string): Promise<AudioFeatures> {
-    const res = await this.http.get(`/audio-features/${id}`);
+    const res = await this.http.get(`/v1/audio-features/${id}`);
 
     return res.data as AudioFeatures;
   }
@@ -20,7 +20,7 @@ export class AudioManager extends Manager {
    * @returns {Promise<AudioFeatures[]>} Returns a promise with a {@link AudioFeatures}.
    */
   async features(trackIds: string[]): Promise<AudioFeatures[]> {
-    const res = await this.http.get('/audio-features', {
+    const res = await this.http.get('/v1/audio-features', {
       query: {
         ids: trackIds.join(',')
       }
@@ -35,7 +35,7 @@ export class AudioManager extends Manager {
    * @returns {Promise<AudioAnalysis>} Returns a promise with a {@link AudioAnalysis}.
    */
   async analysis(id: string): Promise<AudioAnalysis> {
-    const res = await this.http.get(`/audio-analysis/${id}`);
+    const res = await this.http.get(`/v1/audio-analysis/${id}`);
 
     return res.data as AudioAnalysis;
   }

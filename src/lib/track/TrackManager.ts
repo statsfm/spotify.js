@@ -9,7 +9,7 @@ export class TrackManager extends Manager {
    * @returns {Promise<Track>} Returns a promise with a single {@link Track}.
    */
   async get(id: string): Promise<Track> {
-    const res = await this.http.get(`/tracks/${id}`);
+    const res = await this.http.get(`/v1/tracks/${id}`);
 
     return res.data as Track;
   }
@@ -22,7 +22,7 @@ export class TrackManager extends Manager {
   async list(ids: string[]): Promise<Track[]> {
     const tracks = await Promise.all(
       chunk([...ids], 50).map(async (chunk) => {
-        const res = await this.http.get('/tracks', { query: { ids: chunk.join(',') } });
+        const res = await this.http.get('/v1/tracks', { query: { ids: chunk.join(',') } });
         const json = res.data;
 
         return json.tracks as Track[];

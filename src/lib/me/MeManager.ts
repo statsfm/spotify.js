@@ -37,7 +37,7 @@ export class MeManager extends Manager {
    * @param  {TopOptions} options
    */
   async top(type: 'artists' | 'tracks', options?: TopOptions): Promise<unknown> {
-    const res = await this.http.get(`/me/top/${type}`, {
+    const res = await this.http.get(`/v1/me/top/${type}`, {
       query: {
         time_range: options?.timeRange,
         limit: options?.limit as unknown as string,
@@ -53,7 +53,7 @@ export class MeManager extends Manager {
    * @returns {Promise<UserPrivate>}
    */
   async get(): Promise<UserPrivate> {
-    const res = await this.http.get('/me');
+    const res = await this.http.get('/v1/me');
 
     return res.data as UserPrivate;
   }
@@ -75,7 +75,7 @@ export class MeManager extends Manager {
     if (options?.after) query.after = options.after as unknown as string;
     if (options?.before) query.before = options.before as unknown as string;
 
-    const res = await this.http.get(`/me/player/recently-played`, {
+    const res = await this.http.get(`/v1/me/player/recently-played`, {
       query
     });
 
@@ -94,7 +94,7 @@ export class MeManager extends Manager {
    * @returns {Promise} Returns a promise with the current playback state.
    */
   async getPlaybackState(): Promise<PlayerState> {
-    const res = await this.http.get(`/me/player`);
+    const res = await this.http.get(`/v1/me/player`);
 
     const json = res.data;
 
@@ -116,7 +116,7 @@ export class MeManager extends Manager {
     if (options?.limit) query.limit = options.limit.toString();
     if (options?.offset) query.offset = options.offset.toString();
 
-    const res = await this.http.get(`/me/tracks`, {
+    const res = await this.http.get(`/v1/me/tracks`, {
       query
     });
 
@@ -128,7 +128,7 @@ export class MeManager extends Manager {
    * @returns {Promise<boolean[]>} Returns a promise with the an array of booleans.
    */
   async containTracks(ids: string[]): Promise<boolean[]> {
-    const res = await this.http.get(`/me/tracks/contains`, {
+    const res = await this.http.get(`/v1/me/tracks/contains`, {
       query: { ids: ids.join(',') }
     });
 
@@ -140,7 +140,7 @@ export class MeManager extends Manager {
    * @param {string} ids Array of IDs.
    */
   async saveTracks(ids: string[]): Promise<void> {
-    await this.http.put(`/me/tracks`, {
+    await this.http.put(`/v1/me/tracks`, {
       ids
     });
   }
@@ -150,7 +150,7 @@ export class MeManager extends Manager {
    * @param {string} ids Array of IDs.
    */
   async unsaveTracks(ids: string[]): Promise<void> {
-    await this.http.delete(`/me/tracks`, {
+    await this.http.delete(`/v1/me/tracks`, {
       query: { ids: ids.join(',') }
     });
   }
@@ -164,7 +164,7 @@ export class MeManager extends Manager {
     if (options?.limit) query.limit = options.limit.toString();
     if (options?.offset) query.offset = options.offset.toString();
 
-    const res = await this.http.get(`/me/playlists`, {
+    const res = await this.http.get(`/v1/me/playlists`, {
       query
     });
 
@@ -176,6 +176,6 @@ export class MeManager extends Manager {
    * @param {string} id The Spotify ID of the playlist to unfollow.
    */
   async unfollowPlaylist(id: string): Promise<void> {
-    await this.http.delete(`/playlists/${id}/followers`, {});
+    await this.http.delete(`/v1/playlists/${id}/followers`, {});
   }
 }

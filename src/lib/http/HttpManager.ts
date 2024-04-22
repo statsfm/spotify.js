@@ -17,13 +17,17 @@ import {
 import { PrivateConfig, SpotifyConfig } from '../../interfaces/Config';
 
 export class HttpClient {
-  protected baseURL = 'https://api.spotify.com/v1';
+  protected baseURL = 'https://api.spotify.com';
 
   protected tokenURL = 'https://accounts.spotify.com/api/token';
 
   protected client = this.create({ resInterceptor: true });
 
-  constructor(protected config: SpotifyConfig, protected privateConfig: PrivateConfig) {}
+  constructor(protected config: SpotifyConfig, protected privateConfig: PrivateConfig) {
+    if (config.http?.baseURL) {
+      this.baseURL = config.http.baseURL;
+    }
+  }
 
   /**
    * @param {string} slug

@@ -34,7 +34,7 @@ export class PlaylistManager extends Manager {
     if (options?.market) query.market = options.market;
     if (options?.fields) query.fields = options.fields;
 
-    const res = await this.http.get(`/playlists/${id}`, {
+    const res = await this.http.get(`/v1/playlists/${id}`, {
       query
     });
 
@@ -55,7 +55,7 @@ export class PlaylistManager extends Manager {
       description: string;
     }
   ): Promise<Playlist> {
-    const res = await this.http.post(`/users/${userId}/playlists`, data);
+    const res = await this.http.post(`/v1/users/${userId}/playlists`, data);
 
     return res.data as Playlist;
   }
@@ -91,7 +91,7 @@ export class PlaylistManager extends Manager {
     if (options?.market) query.market = options.market;
     if (options?.fields) query.fields = options.fields;
 
-    const res = await this.http.get(`/playlists/${id}/tracks`, { query });
+    const res = await this.http.get(`/v1/playlists/${id}/tracks`, { query });
 
     return res.data as PagingObject<PlaylistTrack>;
   }
@@ -116,7 +116,7 @@ export class PlaylistManager extends Manager {
       if (position > 0) body.position = position.toString();
 
       // eslint-disable-next-line no-await-in-loop
-      await this.http.post(`/playlists/${id}/tracks`, body);
+      await this.http.post(`/v1/playlists/${id}/tracks`, body);
     }
 
     // Adding items to a playlist must be done in the right order,
@@ -162,7 +162,7 @@ export class PlaylistManager extends Manager {
 
         if (snapshot_id) body.snapshot_id = snapshot_id.toString();
 
-        await this.http.delete(`/playlists/${id}/tracks`, body);
+        await this.http.delete(`/v1/playlists/${id}/tracks`, body);
       })
     );
 
@@ -179,7 +179,7 @@ export class PlaylistManager extends Manager {
       throw new Error('Length of id must be greater than 0');
     }
 
-    await this.http.put(`/playlists/${id}/images`, imageData, {
+    await this.http.put(`/v1/playlists/${id}/images`, imageData, {
       headers: {
         'Content-Type': 'image/jpeg'
       }
@@ -204,7 +204,7 @@ export class PlaylistManager extends Manager {
       timestamp?: string;
     }
   ): Promise<FeaturedPlaylist> {
-    const res = await this.http.get('/browse/featured-playlists', {
+    const res = await this.http.get('/v1/browse/featured-playlists', {
       query: {
         ...(options?.offset && { offset: String(options.offset) }),
         ...(options?.limit && { limit: String(options.limit) }),

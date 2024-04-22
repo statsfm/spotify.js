@@ -16,7 +16,7 @@ export class AlbumManager extends Manager {
    * @returns {Promise<Album>} Returns a promise with a single {@link Album}.
    */
   async get(id: string): Promise<Album> {
-    const res = await this.http.get(`/albums/${id}`);
+    const res = await this.http.get(`/v1/albums/${id}`);
 
     return res.data as Album;
   }
@@ -29,7 +29,7 @@ export class AlbumManager extends Manager {
   async list(ids: string[]): Promise<Album[]> {
     const albums = await Promise.all(
       chunk([...ids], 20).map(async (chunk) => {
-        const res = await this.http.get('/albums', { query: { ids: chunk.join(',') } });
+        const res = await this.http.get('/v1/albums', { query: { ids: chunk.join(',') } });
         const json = res.data;
 
         return json.albums as Album[];
@@ -50,7 +50,7 @@ export class AlbumManager extends Manager {
 
     if (options.market) query.market = options.market;
 
-    const res = await this.http.get(`/albums/${id}/tracks`, { query });
+    const res = await this.http.get(`/v1/albums/${id}/tracks`, { query });
 
     return res.data as PagingObject<Track>;
   }
@@ -61,7 +61,7 @@ export class AlbumManager extends Manager {
       offset: options?.offset?.toString() || '0'
     };
 
-    const res = await this.http.get('/browse/new-releases', { query });
+    const res = await this.http.get('/v1/browse/new-releases', { query });
 
     return res.data as NewReleases;
   }

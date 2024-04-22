@@ -8,7 +8,7 @@ export class UserManager extends Manager {
    * @returns {Promise<UserPublic>} Returns a promise with the {@link UserPublic}.
    */
   async get(id: string): Promise<UserPublic> {
-    const res = await this.http.get(`/users/${id}`);
+    const res = await this.http.get(`/v1/users/${id}`);
 
     return res.data as UserPublic;
   }

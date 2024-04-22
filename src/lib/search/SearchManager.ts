@@ -22,7 +22,7 @@ export class SearchManager extends Manager {
 
     if (options?.includeExternal) query.include_external = options.includeExternal;
 
-    const res = await this.http.get('/search', {
+    const res = await this.http.get('/v1/search', {
       query
     });
 

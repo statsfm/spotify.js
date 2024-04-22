@@ -48,6 +48,11 @@ export interface SpotifyConfig {
      * Set headers to be sent with every request.
      */
     headers?: Record<string, string>;
+
+    /**
+     * Base URL for the API. Default: "https://api.spotify.com".
+     */
+    baseURL?: string;
   };
   /**
    * Enable debug mode.

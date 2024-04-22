@@ -16,7 +16,7 @@ export class ArtistManager extends Manager {
    * @returns {Promise<Artist[]>} Returns a promise with a single {@link Artist}.
    */
   async get(id: string): Promise<Artist> {
-    const res = await this.http.get(`/artists/${id}`);
+    const res = await this.http.get(`/v1/artists/${id}`);
 
     return res.data as Artist;
   }
@@ -29,7 +29,7 @@ export class ArtistManager extends Manager {
   async list(ids: string[]): Promise<Artist[]> {
     const artists = await Promise.all(
       chunk([...ids], 50).map(async (chunk) => {
-        const res = await this.http.get('/artists', { query: { ids: chunk.join(',') } });
+        const res = await this.http.get('/v1/artists', { query: { ids: chunk.join(',') } });
         const json = res.data;
 
         return json.artists as Artist[];
@@ -72,7 +72,7 @@ export class ArtistManager extends Manager {
 
     if (options?.market) query.market = options.market;
 
-    const res = await this.http.get(`/artists/${id}/albums`, {
+    const res = await this.http.get(`/v1/artists/${id}/albums`, {
       query
     });
 
@@ -85,7 +85,7 @@ export class ArtistManager extends Manager {
    * @returns {Promise<CursorPagingObject<Album[]>>} Returns a promise with an array of {@link Artist}s.
    */
   async related(id: string): Promise<Artist[]> {
-    const res = await this.http.get(`/artists/${id}/related-artists`);
+    const res = await this.http.get(`/v1/artists/${id}/related-artists`);
 
     return res.data.artists as Artist[];
   }
@@ -104,7 +104,7 @@ export class ArtistManager extends Manager {
 
     if (market) query.market = market;
 
-    const res = await this.http.get(`/artists/${id}/top-tracks`, {
+    const res = await this.http.get(`/v1/artists/${id}/top-tracks`, {
       query
     });
 
