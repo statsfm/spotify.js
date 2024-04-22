@@ -8,7 +8,7 @@
     "registry": "https://registry.npmjs.org/"
   },
   "repository": "https://github.com/statsfm/spotify.js",
-  "author": "Sting Alleman <stingalleman@icloud.com>",
+  "author": "stats.fm Developers (originally made by Sting Alleman)",
   "license": "GPL-3.0",
   "scripts": {
     "dev": "rm -rf dist && tsc --watch",
