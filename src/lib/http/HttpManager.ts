@@ -219,7 +219,7 @@ export class HttpClient {
         'User-Agent':
           this.config.http?.userAgent ??
           `@statsfm/spotify.js https://github.com/statsfm/spotify.js`,
-          this.config.http?.userAgent || `spotify.js https://github.com/statsfm/spotify.js`,
+        ...(this.config.http?.headers ?? {}),
         ...config.headers
       };
 

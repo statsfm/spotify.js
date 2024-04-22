@@ -44,6 +44,10 @@ export interface SpotifyConfig {
      * Change the default outbind IP (can be IPV6 or IPV4).
      */
     localAddress?: string;
+    /**
+     * Set headers to be sent with every request.
+     */
+    headers?: Record<string, string>;
   };
   /**
    * Enable debug mode.
