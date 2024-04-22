@@ -36,7 +36,7 @@ export class HttpClient {
    */
   getURL(slug: string, query?: Record<string, string>): string {
     const url = new URL(this.baseURL);
-    url.pathname += slug;
+    url.pathname = slug;
     url.search = new URLSearchParams(query).toString();
 
     return url.toString();
