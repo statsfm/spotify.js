@@ -4,7 +4,8 @@
   "description": "Node wrapper for Spotify, written in TS.",
   "main": "dist/index.js",
   "publishConfig": {
-    "access": "public"
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
   },
   "repository": "https://github.com/statsfm/spotify.js",
   "author": "Sting Alleman <stingalleman@icloud.com>",
@@ -12,7 +13,7 @@
   "scripts": {
     "dev": "rm -rf dist && tsc --watch",
     "build": "rm -rf dist && tsc",
-    "upload": "yarn lint && yarn build && yarn publish && git push && git push --tags && gh release create",
+    "upload": "yarn lint && yarn build && yarn npm publish && git push && git push --tags && gh release create",
     "lint": "eslint \"src/**/*.ts\"",
     "lint:tsc": "tsc --noEmit -p .",
     "docs": "typedoc --excludePrivate --excludeProtected --name \"spotify.js documentation\" --out docs src/index.ts"
