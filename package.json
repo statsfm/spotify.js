@@ -3,7 +3,6 @@
   "version": "1.11.8",
   "description": "Node wrapper for Spotify, written in TS.",
   "main": "dist/index.js",
-  "private": false,
   "publishConfig": {
     "access": "public"
   },
