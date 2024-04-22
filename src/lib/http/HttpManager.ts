@@ -76,7 +76,9 @@ export class HttpClient {
       }
 
       if (retryAmount < 5) {
-        console.log(`refreshing token failed (${res.status}). retrying... (${retryAmount + 1})`);
+        if (typeof this.config.debug === 'boolean' && this.config.debug === true) {
+          console.log(`refreshing token failed (${res.status}). retrying... (${retryAmount + 1})`);
+        }
         await this.refreshToken(retryAmount + 1);
       } else if (res.status < 600 && res.status >= 500) {
         throw new AuthError(`refreshing token failed: server error (${res.status})`);
@@ -123,7 +125,9 @@ export class HttpClient {
       }
 
       if (retryAmount < 5) {
-        console.log(`getting token failed (${res.status}). retrying... (${retryAmount + 1})`);
+        if (typeof this.config.debug === 'boolean' && this.config.debug === true) {
+          console.log(`getting token failed (${res.status}). retrying... (${retryAmount + 1})`);
+        }
         await this.getToken(retryAmount + 1);
       } else if (res.status < 600 && res.status >= 500) {
         throw new AuthError(`getting token failed: server error (${res.status})`);
@@ -212,9 +216,9 @@ export class HttpClient {
       // add authorization, content
       config.headers = {
         Authorization: `Bearer ${await this.handleAuth()}`,
-        // 'Content-Type': 'application/json',
-        // Accept: 'application/json',
         'User-Agent':
+          this.config.http?.userAgent ??
+          `@statsfm/spotify.js https://github.com/statsfm/spotify.js`,
           this.config.http?.userAgent || `spotify.js https://github.com/statsfm/spotify.js`,
         ...config.headers
       };
@@ -275,9 +279,11 @@ export class HttpClient {
 
                 // retry x times
                 for (let i = 0; i < this.config.retry5xxAmount; i++) {
-                  console.log(
-                    `${res.status} error, retrying... (${i + 1}/${this.config.retry5xxAmount})`
-                  );
+                  if (typeof this.config.debug === 'boolean' && this.config.debug === true) {
+                    console.log(
+                      `${res.status} error, retrying... (${i + 1}/${this.config.retry5xxAmount})`
+                    );
+                  }
 
                   // timeout one second
                   // eslint-disable-next-line no-await-in-loop

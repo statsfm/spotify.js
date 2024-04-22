@@ -45,6 +45,10 @@ export interface SpotifyConfig {
      */
     localAddress?: string;
   };
+  /**
+   * Enable debug mode.
+   */
+  debug?: boolean;
 }
 
 export interface PrivateConfig {
