@@ -51,3 +51,10 @@ export class BadRequestError extends Error {
     if (stack) this.stack = stack;
   }
 }
+
+export class RequestRetriesExceededError extends Error {
+  constructor(message: string, public readonly cause: unknown) {
+    super(message);
+    this.name = 'RequestRetriesExceededError';
+  }
+}

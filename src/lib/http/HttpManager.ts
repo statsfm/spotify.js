@@ -2,7 +2,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 
-import axios, { AxiosError, AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
+import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
 import { URL, URLSearchParams } from 'url';
 import * as https from 'https';
 import { ClientRequest } from 'http';
@@ -12,7 +12,8 @@ import {
   BadRequestError,
   ForbiddenError,
   NotFoundError,
-  RatelimitError
+  RatelimitError,
+  RequestRetriesExceededError
 } from '../../interfaces/Errors';
 import { PrivateConfig, SpotifyConfig } from '../../interfaces/Config';
 
@@ -234,12 +235,18 @@ export class HttpClient {
       client.interceptors.response.use(
         (config) => config,
         // error handler
-        async (err: AxiosError) => {
-          let res = err.response;
+        async (err) => {
+          if (!axios.isAxiosError(err) || !err.response) {
+            throw err;
+          }
 
-          if (res?.status) {
+          const { response } = err;
+
+          let { status: statusCode } = response;
+
+          if (statusCode) {
             // throw error if bad request
-            if (res.status === 400) {
+            if (statusCode === 400) {
               throw new BadRequestError(
                 `bad request (${err.config.url})\n${JSON.stringify(err.response.data, null, ' ')}`,
                 err.stack
@@ -247,32 +254,31 @@ export class HttpClient {
             }
 
             // throw error if forbideden
-            if (res.status === 403) {
+            if (statusCode === 403) {
+              const responseDataJSON = JSON.stringify(response.data, null, ' ');
+
               throw new ForbiddenError(
-                `forbidden, are you sure you have the right scopes? (${
-                  err.config.url
-                })\n${JSON.stringify(res.data, null, ' ')}`,
+                `forbidden, are you sure you have the right scopes? (${err.config.url})\n${responseDataJSON}`,
                 err.stack
               );
             }
 
             // throw error if 404
-            if (res.status === 404) {
-              throw new NotFoundError(`not found (${res.config.url})`, err.stack);
+            if (statusCode === 404) {
+              throw new NotFoundError(`not found (${response.config.url})`, err.stack);
             }
 
-            if (res.status === 401) {
+            if (statusCode === 401) {
+              const responseDataJSON = JSON.stringify(response.data, null, ' ');
+
               throw new AuthError(
-                `unauthorized (${err.config.url}) ${JSON.stringify(res.data, null, ' ')}`,
+                `unauthorized (${err.config.url}) ${responseDataJSON}`,
                 err.stack
               );
-              //   await this.handleAuth();
-              //   const res = await client.request(err.config);
-              //   return res;
             }
 
             // 5xx
-            if (res.status >= 500 && res.status < 600) {
+            if (statusCode >= 500 && statusCode < 600) {
               if (this.config.retry5xx || this.config.retry5xx === undefined) {
                 // set default
                 if (!this.config.retry5xxAmount) this.config.retry5xxAmount = 3;
@@ -281,10 +287,10 @@ export class HttpClient {
                 const nClient = this.create({ resInterceptor: false });
 
                 // retry x times
-                for (let i = 0; i < this.config.retry5xxAmount; i++) {
-                  if (typeof this.config.debug === 'boolean' && this.config.debug === true) {
+                for (let i = 1; i <= this.config.retry5xxAmount; i++) {
+                  if (this.config.debug === true) {
                     console.log(
-                      `${res.status} error, retrying... (${i + 1}/${this.config.retry5xxAmount})`
+                      `(${i}/${this.config.retry5xxAmount}) retry ${err.config.url} - ${statusCode}`
                     );
                   }
 
@@ -304,11 +310,28 @@ export class HttpClient {
                     if (nRes.status >= 200 && nRes.status < 300) {
                       return nRes;
                     }
-                  } catch (err) {
-                    if (i === this.config.retry5xxAmount - 1) {
-                      throw new Error(
-                        `${res.status} error, retried ${this.config.retry5xxAmount} times\n${err.stack}`
-                      );
+
+                    statusCode = nRes.status;
+                  } catch (error) {
+                    if (!axios.isAxiosError(error)) {
+                      throw err;
+                    }
+
+                    if (i === this.config.retry5xxAmount) {
+                      // handling axios error @see https://axios-http.com/docs/handling_errors
+                      if (error.response) {
+                        throw new RequestRetriesExceededError(
+                          `Request to ${err.config.url} exceeded ${this.config.retry5xxAmount} number of retry attempts, failed with status code ${error.response.status}`,
+                          error.stack
+                        );
+                      }
+
+                      if (error.request) {
+                        throw new RequestRetriesExceededError(
+                          `Request to ${err.config.url} exceeded ${this.config.retry5xxAmount} number of retry attempts, no response received`,
+                          error.stack
+                        );
+                      }
                     }
                   }
                 }
@@ -319,12 +342,13 @@ export class HttpClient {
             //   throw new InternalServerError('internal server error', err.stack);
             // }
 
-            if (res.status === 429) {
+            if (statusCode === 429) {
               if (this.config.logRetry) {
-                console.log(res);
+                console.log(response);
               }
+
               if (this.config.retry || this.config.retry === undefined) {
-                const retry = res.headers[`retry-after`] as unknown as number; // get retry time
+                const retry = response.headers[`retry-after`] as unknown as number; // get retry time
 
                 // log ratelimit (if enabled)
                 if (this.config.logRetry || this.config.logRetry === undefined) {
@@ -335,11 +359,11 @@ export class HttpClient {
                 }
 
                 await sleep(retry * 1_000); // wait for retry time
-                res = await client.request(err.config); // retry request
-              } else {
-                throw new RatelimitError(`hit ratelimit (${err.config.url})`, err.stack);
+
+                return await client.request(err.config); // retry request
               }
-              return res;
+
+              throw new RatelimitError(`hit ratelimit (${err.config.url})`, err.stack);
             }
           }
 
