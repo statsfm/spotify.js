@@ -272,7 +272,7 @@ export class HttpClient {
             }
 
             // 5xx
-            if (res.status.toString().startsWith('5')) {
+            if (res.status >= 500 && res.status < 600) {
               if (this.config.retry5xx || this.config.retry5xx === undefined) {
                 // set default
                 if (!this.config.retry5xxAmount) this.config.retry5xxAmount = 3;
@@ -301,7 +301,7 @@ export class HttpClient {
                     const nRes = await nClient.request(err.config);
 
                     // starts with 200, successful
-                    if (nRes.status.toString().startsWith('2')) {
+                    if (nRes.status >= 200 && nRes.status < 300) {
                       return nRes;
                     }
                   } catch (err) {
