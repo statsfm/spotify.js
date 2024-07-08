@@ -16,6 +16,13 @@ import {
 } from '../../interfaces/Errors';
 import { PrivateConfig, SpotifyConfig } from '../../interfaces/Config';
 
+/**
+ * Sleep function.
+ * @param {number} delay Delay in milliseconds.
+ */
+const sleep = (delay: number): Promise<void> =>
+  new Promise((resolve) => setTimeout(resolve, delay));
+
 export class HttpClient {
   protected baseURL = 'https://api.spotify.com';
 
@@ -182,14 +189,6 @@ export class HttpClient {
     throw new AuthError('auth failed: missing information to handle auth');
   }
 
-  /**
-   * Sleep function.
-   * @param {number} delay Delay in milliseconds.
-   */
-  private sleep(delay: number): Promise<void> {
-    return new Promise((resolve) => setTimeout(resolve, delay));
-  }
-
   // create axios client, set interceptors, handle errors & auth
   private create(options: { resInterceptor?: boolean }): AxiosInstance {
     const config: AxiosRequestConfig = {
@@ -291,7 +290,7 @@ export class HttpClient {
 
                   // timeout one second
                   // eslint-disable-next-line no-await-in-loop
-                  await this.sleep(1 * 1000); // wait for retry time
+                  await sleep(1_000); // wait for retry time
 
                   // disable error checking
                   // err.config.validateStatus = (): boolean => true;
@@ -335,7 +334,7 @@ export class HttpClient {
                   );
                 }
 
-                await this.sleep(retry * 1000); // wait for retry time
+                await sleep(retry * 1_000); // wait for retry time
                 res = await client.request(err.config); // retry request
               } else {
                 throw new RatelimitError(`hit ratelimit (${err.config.url})`, err.stack);
