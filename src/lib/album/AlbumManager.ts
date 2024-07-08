@@ -36,7 +36,7 @@ export class AlbumManager extends Manager {
       })
     );
 
-    return [].concat(...albums);
+    return albums.flat();
   }
 
   async tracks(

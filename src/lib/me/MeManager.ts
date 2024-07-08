@@ -21,6 +21,7 @@ export class MeManager extends Manager {
    * @param {TopOptions} options?
    * @returns {Promise<PagingObject<Artist>>} Returns a promise with the paginated {@link Artist}.
    */
+  // eslint-disable-next-line no-unused-vars
   async top(type: 'artists', options?: TopOptions): Promise<PagingObject<Artist>>;
 
   /**
@@ -29,6 +30,7 @@ export class MeManager extends Manager {
    * @param {TopOptions} options?
    * @returns {Promise<PagingObject<Track>>} Returns a promise with the paginated {@link Track}.
    */
+  // eslint-disable-next-line no-unused-vars
   async top(type: 'tracks', options?: TopOptions): Promise<PagingObject<Track>>;
 
   /**

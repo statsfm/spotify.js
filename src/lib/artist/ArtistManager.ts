@@ -36,7 +36,7 @@ export class ArtistManager extends Manager {
       })
     );
 
-    return [].concat(...artists);
+    return artists.flat();
   }
 
   /**

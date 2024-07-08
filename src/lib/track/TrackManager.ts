@@ -29,6 +29,6 @@ export class TrackManager extends Manager {
       })
     );
 
-    return [].concat(...tracks);
+    return tracks.flat();
   }
 }
