@@ -13,9 +13,11 @@ import {
   ForbiddenError,
   NotFoundError,
   RatelimitError,
+  RequestRetriesExceededError,
   UnauthorizedError
 } from '../../interfaces/Errors';
 import { PrivateConfig, SpotifyConfig } from '../../interfaces/Config';
+import { sleep } from '../../util/sleep';
 
 export class HttpClient {
   protected baseURL = 'https://api.spotify.com';
@@ -191,15 +193,6 @@ export class HttpClient {
   }
 
   /**
-   * Sleep function.
-   * @param {number} delay Delay in milliseconds.
-   * @returns {Promise<void>} Returns a promise.
-   */
-  private sleep(delay: number): Promise<void> {
-    return new Promise((resolve) => setTimeout(resolve, delay));
-  }
-
-  /**
    * Create an axios instance, set interceptors, handle errors & auth.
    */
   private create(options: { resInterceptor?: boolean }): AxiosInstance {
@@ -246,41 +239,43 @@ export class HttpClient {
     client: AxiosInstance,
     err: AxiosError<Record<string, unknown>>
   ): Promise<AxiosResponse> {
-    const res = err.response;
-
-    if (!res?.status) {
+    if (!axios.isAxiosError(err) || !err.response) {
       throw err;
     }
 
-    switch (res.status) {
+    const { response } = err;
+
+    const { status: statusCode } = response;
+
+    switch (statusCode) {
       case 400:
         throw new BadRequestError(err.config.url, {
           stack: err.stack,
-          data: res.data
+          data: response.data
         });
 
       case 401:
         throw new UnauthorizedError(err.config.url, {
           stack: err.stack,
-          data: res.data
+          data: response.data
         });
 
       case 403:
         throw new ForbiddenError(err.config.url, {
           stack: err.stack,
-          data: res.data
+          data: response.data
         });
 
       case 404:
         throw new NotFoundError(err.config.url, err.stack);
 
       case 429:
-        await this.handleRateLimit(res, err);
+        await this.handleRateLimit(response, err);
         break;
 
       default:
-        if (res.status.toString().startsWith('5')) {
-          return await this.handle5xxErrors(res, err);
+        if (statusCode >= 500 && statusCode < 600) {
+          return await this.handle5xxErrors(response, err, statusCode);
         } else {
           throw err;
         }
@@ -301,7 +296,7 @@ export class HttpClient {
         );
       }
 
-      await this.sleep(retryAfter * 1000);
+      await sleep(retryAfter * 1_000);
       return await this.client.request(err.config);
     } else {
       throw new RatelimitError(
@@ -315,7 +310,11 @@ export class HttpClient {
     }
   }
 
-  private async handle5xxErrors(res: AxiosResponse, err: AxiosError): Promise<AxiosResponse> {
+  private async handle5xxErrors(
+    res: AxiosResponse,
+    err: AxiosError,
+    statusCode: number
+  ): Promise<AxiosResponse> {
     if (!this.config.retry5xx && this.config.retry5xx !== undefined) {
       throw err;
     }
@@ -323,26 +322,29 @@ export class HttpClient {
     this.config.retry5xxAmount = this.config.retry5xxAmount || 3;
     const nClient = this.create({ resInterceptor: false });
 
-    for (let i = 0; i < this.config.retry5xxAmount; i++) {
+    for (let i = 1; i <= this.config.retry5xxAmount; i++) {
       if (this.config.debug) {
-        console.log(
-          `${res.status} error, retrying in 1 second... (${i + 1}/${this.config.retry5xxAmount})`
-        );
+        console.log(`(${i}/${this.config.retry5xxAmount}) retry ${err.config.url} - ${statusCode}`);
       }
 
-      await this.sleep(1000);
+      await sleep(1_000);
 
       try {
         const nRes = await nClient.request(err.config);
 
-        if (nRes.status.toString().startsWith('2')) {
+        if (nRes.status >= 200 && nRes.status < 300) {
           return nRes;
         }
-      } catch (retryErr) {
-        const axiosErr = retryErr as AxiosError;
-        switch (axiosErr.response.status) {
+        statusCode = nRes.status;
+      } catch (error) {
+        if (!axios.isAxiosError(error)) {
+          throw err;
+        }
+        const axiosError = error as AxiosError;
+        statusCode = axiosError.response.status;
+        switch (statusCode) {
           case 429:
-            await this.handleRateLimit(axiosErr.response, axiosErr);
+            await this.handleRateLimit(axiosError.response, axiosError);
             break;
 
           case 401:
@@ -361,12 +363,23 @@ export class HttpClient {
             throw new NotFoundError(err.config.url, err.stack);
 
           default:
-            if (i === this.config.retry5xxAmount - 1) {
-              const error = new Error(
-                `${res.status} error, retried ${this.config.retry5xxAmount} times`
-              );
-              error.stack = axiosErr.stack;
-              throw error;
+            if (i === this.config.retry5xxAmount) {
+              // handling axios error @see https://axios-http.com/docs/handling_errors
+              if (error.response) {
+                throw new RequestRetriesExceededError(
+                  `Request exceeded ${this.config.retry5xxAmount} number of retry attempts, failed with status code ${statusCode}`,
+                  error.config.url,
+                  error.stack
+                );
+              }
+
+              if (error.request) {
+                throw new RequestRetriesExceededError(
+                  `Request exceeded ${this.config.retry5xxAmount} number of retry attempts, no response received`,
+                  error.config.url,
+                  error.stack
+                );
+              }
             }
         }
       }

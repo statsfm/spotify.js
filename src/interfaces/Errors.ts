@@ -97,3 +97,14 @@ export class BadRequestError extends Error {
     if (extra.data) this.data = extra.data;
   }
 }
+
+export class RequestRetriesExceededError extends Error {
+  constructor(
+    message: string,
+    public url: string,
+    public readonly cause: unknown
+  ) {
+    super(message);
+    this.name = 'RequestRetriesExceededError';
+  }
+}
