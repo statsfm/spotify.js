@@ -338,29 +338,29 @@ export class HttpClient {
         statusCode = nRes.status;
       } catch (error) {
         if (!axios.isAxiosError(error)) {
-          throw err;
+          throw error;
         }
-        const axiosError = error as AxiosError;
-        statusCode = axiosError.response.status;
+
+        statusCode = error.response.status;
         switch (statusCode) {
           case 429:
-            await this.handleRateLimit(axiosError.response, axiosError);
+            await this.handleRateLimit(error.response, error);
             break;
 
           case 401:
-            throw new UnauthorizedError(err.config.url, {
-              stack: err.stack,
+            throw new UnauthorizedError(error.config.url, {
+              stack: error.stack,
               data: res.data
             });
 
           case 403:
-            throw new ForbiddenError(err.config.url, {
-              stack: err.stack,
+            throw new ForbiddenError(error.config.url, {
+              stack: error.stack,
               data: res.data
             });
 
           case 404:
-            throw new NotFoundError(err.config.url, err.stack);
+            throw new NotFoundError(error.config.url, error.stack);
 
           default:
             if (i === this.config.retry5xxAmount) {
