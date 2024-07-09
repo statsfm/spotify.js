@@ -337,7 +337,7 @@ export class HttpClient {
         }
         statusCode = nRes.status;
       } catch (error) {
-        if (!axios.isAxiosError(error)) {
+        if (!axios.isAxiosError(error) || !error.response) {
           throw error;
         }
 
@@ -364,22 +364,11 @@ export class HttpClient {
 
           default:
             if (i === this.config.retry5xxAmount) {
-              // handling axios error @see https://axios-http.com/docs/handling_errors
-              if (error.response) {
-                throw new RequestRetriesExceededError(
-                  `Request exceeded ${this.config.retry5xxAmount} number of retry attempts, failed with status code ${statusCode}`,
-                  error.config.url,
-                  error.stack
-                );
-              }
-
-              if (error.request) {
-                throw new RequestRetriesExceededError(
-                  `Request exceeded ${this.config.retry5xxAmount} number of retry attempts, no response received`,
-                  error.config.url,
-                  error.stack
-                );
-              }
+              throw new RequestRetriesExceededError(
+                `Request exceeded ${this.config.retry5xxAmount} number of retry attempts, failed with status code ${statusCode}`,
+                error.config.url,
+                error.stack
+              );
             }
         }
       }
