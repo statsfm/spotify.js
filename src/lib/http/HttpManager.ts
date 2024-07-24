@@ -19,14 +19,15 @@ import {
 import { PrivateConfig, SpotifyConfig } from '../../interfaces/Config';
 import { sleep } from '../../util/sleep';
 
+const accountsApiUrl = 'https://accounts.spotify.com/api';
+
 const accessTokenExpireTTL = 60 * 60 * 1_000; // 1hour
 
 export class HttpClient {
   protected baseURL = 'https://api.spotify.com';
 
-  protected tokenURL = 'https://accounts.spotify.com/api/token';
-
-  protected client = this.create({ resInterceptor: true });
+  protected client: AxiosInstance;
+  protected authClient: AxiosInstance;
 
   constructor(
     protected config: SpotifyConfig,
@@ -35,6 +36,21 @@ export class HttpClient {
     if (config.http?.baseURL) {
       this.baseURL = config.http.baseURL;
     }
+
+    this.authClient = axios.create({
+      baseURL: accountsApiUrl,
+      auth: {
+        username: this.config.clientCredentials?.clientId,
+        password: this.config.clientCredentials?.clientSecret
+      },
+      validateStatus: () => true
+    });
+
+    this.client = this.create();
+    this.client.interceptors.response.use(
+      (response) => response,
+      (error: AxiosError<Record<string, unknown>>) => this.errorHandler(error)
+    );
   }
 
   /**
@@ -67,19 +83,12 @@ export class HttpClient {
       );
     }
 
-    const response = await axios.post(
-      this.tokenURL,
+    const response = await this.authClient.post(
+      '/token',
       new URLSearchParams({
         grant_type: 'refresh_token',
         refresh_token: this.config.refreshToken
-      }),
-      {
-        auth: {
-          username: this.config.clientCredentials.clientId,
-          password: this.config.clientCredentials.clientSecret
-        },
-        validateStatus: () => true
-      }
+      })
     );
 
     const { status: statusCode } = response;
@@ -117,18 +126,11 @@ export class HttpClient {
    * @returns {string} Returns the authorization token.
    */
   private async getToken(retryAmount = 0): Promise<string> {
-    const response = await axios.post(
-      this.tokenURL,
+    const response = await this.authClient.post(
+      '/token',
       new URLSearchParams({
         grant_type: 'client_credentials'
-      }),
-      {
-        auth: {
-          username: this.config.clientCredentials.clientId,
-          password: this.config.clientCredentials.clientSecret
-        },
-        validateStatus: () => true
-      }
+      })
     );
 
     const { status: statusCode } = response;
@@ -207,9 +209,14 @@ export class HttpClient {
   /**
    * Create an axios instance, set interceptors, handle errors & auth.
    */
-  private create(options: { resInterceptor?: boolean }): AxiosInstance {
+  private create(): AxiosInstance {
     const config: AxiosRequestConfig = {
-      proxy: this.config.http?.proxy
+      proxy: this.config.http?.proxy,
+      headers: {
+        ...this.config.http?.headers,
+        'User-Agent':
+          this.config.http?.userAgent ?? '@statsfm/spotify.js https://github.com/statsfm/spotify.js'
+      }
     };
 
     if (this.config.http?.localAddress) {
@@ -226,31 +233,24 @@ export class HttpClient {
           )
       };
     }
+
     const client = axios.create(config);
+
     axiosBetterStacktrace(client);
 
     // request interceptor
     client.interceptors.request.use(async (config) => {
-      config.headers.Authorization = `Bearer ${await this.handleAuth()}`;
-      config.headers['User-Agent'] =
-        this.config.http?.userAgent ?? `@statsfm/spotify.js https://github.com/statsfm/spotify.js`;
-      config.headers = Object.assign(this.config.http?.headers ?? {}, config.headers);
+      const accessToken = await this.handleAuth();
+
+      config.headers.Authorization = `Bearer ${accessToken}`;
 
       return config;
     });
 
-    if (options.resInterceptor || options.resInterceptor === undefined) {
-      // Response interceptor
-      client.interceptors.response.use((config) => config, this.errorHandler.bind(this, client));
-    }
-
     return client;
   }
 
-  private async errorHandler(
-    client: AxiosInstance,
-    err: AxiosError<Record<string, unknown>>
-  ): Promise<AxiosResponse> {
+  private async errorHandler(err: AxiosError<Record<string, unknown>>): Promise<AxiosResponse> {
     if (!axios.isAxiosError(err) || !err.response) {
       throw err;
     }
@@ -332,7 +332,8 @@ export class HttpClient {
     }
 
     this.config.retry5xxAmount = this.config.retry5xxAmount || 3;
-    const nClient = this.create({ resInterceptor: false });
+
+    const nClient = this.create();
 
     for (let i = 1; i <= this.config.retry5xxAmount; i++) {
       if (this.config.debug) {
@@ -377,9 +378,9 @@ export class HttpClient {
           default:
             if (i === this.config.retry5xxAmount) {
               throw new RequestRetriesExceededError(
-                `Request exceeded ${this.config.retry5xxAmount} number of retry attempts, failed with status code ${statusCode}`,
+                `Request exceeded ${this.config.retry5xxAmount} retry attempts`,
                 error.config.url,
-                error.stack
+                error.response
               );
             }
         }
@@ -389,14 +390,14 @@ export class HttpClient {
 
   /**
    * @param {string} slug The slug to get.
-   * @param {{query?: Record<string, string> & AxiosRequestConfig}} options Options.
+   * @param {{query?: Record<string, string> & AxiosRequestConfig}} config Config.
    * @returns {Promise<AxiosResponse>} Returns a promise with the response.
    */
   async get(
     slug: string,
-    options?: { query?: Record<string, string> } & AxiosRequestConfig
+    config?: { query?: Record<string, string> } & AxiosRequestConfig
   ): Promise<AxiosResponse> {
-    return await this.client.get(this.getURL(slug, options?.query), options);
+    return await this.client.get(this.getURL(slug, config?.query), config);
   }
 
   /**
@@ -430,16 +431,16 @@ export class HttpClient {
   /**
    * @param {string} slug The slug to delete.
    * @param {any} data Body data.
-   * @param {{Record<string, string> & RequestInit}} options Options.
+   * @param {{Record<string, string> & RequestInit}} config Config.
    * @returns {Promise<Response>} Returns a promise with the response.
    */
   async delete(
     slug: string,
     data: any,
-    options?: { query?: Record<string, string> } & AxiosRequestConfig
+    config?: { query?: Record<string, string> } & AxiosRequestConfig
   ): Promise<AxiosResponse> {
-    return await this.client.delete(this.getURL(slug, options?.query), {
-      ...options,
+    return await this.client.delete(this.getURL(slug, config?.query), {
+      ...config,
       data
     });
   }
