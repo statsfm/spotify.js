@@ -44,6 +44,7 @@ export class HttpClient {
    */
   getURL(slug: string, query?: Record<string, string>): string {
     const url = new URL(this.baseURL);
+
     url.pathname = slug;
     url.search = new URLSearchParams(query).toString();
 
@@ -116,48 +117,47 @@ export class HttpClient {
    * @returns {string} Returns the authorization token.
    */
   private async getToken(retryAmount = 0): Promise<string> {
-    const res = await axios.post(
+    const response = await axios.post(
       this.tokenURL,
       new URLSearchParams({
         grant_type: 'client_credentials'
       }),
       {
-        headers: {
-          authorization: `Basic ${Buffer.from(
-            `${this.config.clientCredentials.clientId}:${this.config.clientCredentials.clientSecret}`
-          ).toString('base64')}`
+        auth: {
+          username: this.config.clientCredentials.clientId,
+          password: this.config.clientCredentials.clientSecret
         },
         validateStatus: () => true
       }
     );
 
-    // error handling
-    if (res.status !== 200) {
-      if (res.status === 400) {
-        throw new AuthError(
-          `getting token failed: bad request\n${JSON.stringify(res.data, null, ' ')}`
-        );
-      }
+    const { status: statusCode } = response;
 
-      if (retryAmount < 5) {
-        if (typeof this.config.debug === 'boolean' && this.config.debug === true) {
-          console.log(`getting token failed (${res.status}). retrying... (${retryAmount + 1})`);
-        }
-        await this.getToken(retryAmount + 1);
-      } else if (res.status < 600 && res.status >= 500) {
-        throw new AuthError(`getting token failed: server error (${res.status})`);
-      } else {
-        throw new AuthError(`getting token failed (${res.status})`);
-      }
+    if (statusCode === 200) {
+      return response.data.access_token;
     }
 
-    this.config.accessToken = res.data.access_token;
+    if (statusCode === 400) {
+      throw new AuthError(`Failed to get token: bad request`, {
+        data: response.data
+      });
+    }
 
-    this.privateConfig.tokenExpire = new Date(
-      new Date().setSeconds(new Date().getSeconds() + 3600)
-    );
+    if (retryAmount === 5) {
+      if (statusCode >= 500 && statusCode < 600) {
+        throw new AuthError(`Failed to get token: server error (${statusCode})`);
+      }
 
-    return this.config.accessToken;
+      throw new AuthError(`Request retry attempts exceeded, failed with status code ${statusCode}`);
+    }
+
+    if (typeof this.config.debug === 'boolean' && this.config.debug === true) {
+      console.log(
+        `Failed to get token: got (${statusCode}) response. retrying... (${retryAmount + 1})`
+      );
+    }
+
+    return await this.getToken(retryAmount + 1);
   }
 
   /**
@@ -169,6 +169,7 @@ export class HttpClient {
       // check if token is expired
       if (new Date() >= this.privateConfig.tokenExpire) {
         this.config.accessToken = undefined;
+
         return await this.handleAuth();
       }
 
@@ -192,7 +193,12 @@ export class HttpClient {
 
     // add credentials flow
     if (this.config?.clientCredentials?.clientId && this.config?.clientCredentials?.clientSecret) {
-      return await this.getToken();
+      const accessToken = await this.getToken();
+
+      this.config.accessToken = accessToken;
+      this.privateConfig.tokenExpire = new Date(Date.now() + accessTokenExpireTTL);
+
+      return accessToken;
     }
 
     throw new AuthError('auth failed: missing information to handle auth');
