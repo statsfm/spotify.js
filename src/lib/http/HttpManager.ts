@@ -19,6 +19,8 @@ import {
 import { PrivateConfig, SpotifyConfig } from '../../interfaces/Config';
 import { sleep } from '../../util/sleep';
 
+const accessTokenExpireTTL = 60 * 60 * 1_000; // 1hour
+
 export class HttpClient {
   protected baseURL = 'https://api.spotify.com';
 
@@ -64,49 +66,48 @@ export class HttpClient {
       );
     }
 
-    const res = await axios.post(
+    const response = await axios.post(
       this.tokenURL,
       new URLSearchParams({
         grant_type: 'refresh_token',
         refresh_token: this.config.refreshToken
       }),
       {
-        headers: {
-          authorization: `Basic ${Buffer.from(
-            `${this.config.clientCredentials.clientId}:${this.config.clientCredentials.clientSecret}`
-          ).toString('base64')}`
+        auth: {
+          username: this.config.clientCredentials.clientId,
+          password: this.config.clientCredentials.clientSecret
         },
         validateStatus: () => true
       }
     );
 
-    if (res.status !== 200) {
-      if (res.status === 400) {
-        throw new AuthError(`Refreshing token failed: Bad request`, { data: res.data });
-      }
+    const { status: statusCode } = response;
 
-      if (res.status >= 500 && res.status < 600) {
-        throw new AuthError(`Refreshing token failed: server error (${res.status})`);
-      }
-
-      if (retryAmount < 5) {
-        if (this.config.debug) {
-          console.log(`Refreshing token failed (${res.status}). Retrying... (${retryAmount + 1})`);
-        }
-        await this.refreshToken(retryAmount + 1);
-      } else {
-        throw new AuthError(`Refreshing token failed (${res.status})`);
-      }
+    if (statusCode === 200) {
+      return response.data.access_token;
     }
 
-    this.config.accessToken = res.data.access_token;
+    if (statusCode === 400) {
+      throw new AuthError('Failed to refresh token: bad request', {
+        data: response.data
+      });
+    }
 
-    // save expire now
-    this.privateConfig.tokenExpire = new Date(
-      new Date().setSeconds(new Date().getSeconds() + 3600)
-    );
+    if (retryAmount === 5) {
+      if (statusCode >= 500 && statusCode < 600) {
+        throw new AuthError(`Failed to refresh token: server error (${statusCode})`);
+      }
 
-    return this.config.accessToken;
+      throw new AuthError(`Request retry attempts exceeded, failed with status code ${statusCode}`);
+    }
+
+    if (this.config.debug) {
+      console.log(
+        `Failed to refresh token: got (${statusCode}) response. Retrying... (${retryAmount + 1})`
+      );
+    }
+
+    return await this.refreshToken(retryAmount + 1);
   }
 
   /**
@@ -181,7 +182,12 @@ export class HttpClient {
       this.config?.clientCredentials?.clientSecret &&
       this.config?.refreshToken
     ) {
-      return await this.refreshToken(); // refresh token
+      const accessToken = await this.refreshToken();
+
+      this.config.accessToken = accessToken;
+      this.privateConfig.tokenExpire = new Date(Date.now() + accessTokenExpireTTL);
+
+      return accessToken;
     }
 
     // add credentials flow
