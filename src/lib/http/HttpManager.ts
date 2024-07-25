@@ -167,7 +167,7 @@ export class HttpClient {
   private async handleAuth(): Promise<string> {
     if (this.config.accessToken) {
       // check if token is expired
-      if (new Date() >= this.privateConfig.tokenExpire) {
+      if (this.privateConfig.tokenExpireAt < Date.now()) {
         this.config.accessToken = undefined;
 
         return await this.handleAuth();
@@ -186,7 +186,7 @@ export class HttpClient {
       const accessToken = await this.refreshToken();
 
       this.config.accessToken = accessToken;
-      this.privateConfig.tokenExpire = new Date(Date.now() + accessTokenExpireTTL);
+      this.privateConfig.tokenExpireAt = Date.now() + accessTokenExpireTTL;
 
       return accessToken;
     }
@@ -196,7 +196,7 @@ export class HttpClient {
       const accessToken = await this.getToken();
 
       this.config.accessToken = accessToken;
-      this.privateConfig.tokenExpire = new Date(Date.now() + accessTokenExpireTTL);
+      this.privateConfig.tokenExpireAt = Date.now() + accessTokenExpireTTL;
 
       return accessToken;
     }

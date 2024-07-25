@@ -61,5 +61,5 @@ export interface SpotifyConfig {
 }
 
 export interface PrivateConfig {
-  tokenExpire?: Date;
+  tokenExpireAt?: number;
 }
