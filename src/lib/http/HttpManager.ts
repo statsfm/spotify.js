@@ -299,18 +299,7 @@ export class HttpClient {
       console.log(res);
     }
 
-    if (this.config.retry || this.config.retry === undefined) {
-      const retryAfter = parseInt(res.headers['retry-after']) || 0;
-
-      if (this.config.logRetry || this.config.logRetry === undefined) {
-        console.error(
-          `Hit ratelimit, retrying in ${retryAfter} second(s), client id: ${this.config.clientCredentials?.clientId ?? 'none'}, path: ${err.request.path}`
-        );
-      }
-
-      await sleep(retryAfter * 1_000);
-      return await this.client.request(err.config);
-    } else {
+    if (this.config.retry === false) {
       throw new RatelimitError(
         `Hit ratelimit, retry after ${res.headers['retry-after']} seconds`,
         err.config.url,
@@ -320,6 +309,18 @@ export class HttpClient {
         }
       );
     }
+
+    const retryAfter = parseInt(res.headers['retry-after']) || 0;
+
+    if (this.config.logRetry || this.config.logRetry === undefined) {
+      console.error(
+        `Hit ratelimit, retrying in ${retryAfter} second(s), client id: ${this.config.clientCredentials?.clientId ?? 'none'}, path: ${err.request.path}`
+      );
+    }
+
+    await sleep(retryAfter * 1_000);
+
+    return await this.client.request(err.config);
   }
 
   private async handle5xxErrors(
@@ -408,7 +409,7 @@ export class HttpClient {
    */
   async post(
     slug: string,
-    data: any,
+    data: unknown,
     config?: { query?: Record<string, string> } & AxiosRequestConfig
   ): Promise<AxiosResponse> {
     return await this.client.post(this.getURL(slug, config?.query), data, config);
@@ -422,7 +423,7 @@ export class HttpClient {
    */
   async put(
     slug: string,
-    data: any,
+    data: unknown,
     config?: { query?: Record<string, string> } & AxiosRequestConfig
   ): Promise<AxiosResponse> {
     return await this.client.put(this.getURL(slug, config?.query), data, config);
@@ -430,13 +431,13 @@ export class HttpClient {
 
   /**
    * @param {string} slug The slug to delete.
-   * @param {any} data Body data.
+   * @param {unknown} data Body data.
    * @param {{Record<string, string> & RequestInit}} config Config.
    * @returns {Promise<Response>} Returns a promise with the response.
    */
   async delete(
     slug: string,
-    data: any,
+    data: unknown,
     config?: { query?: Record<string, string> } & AxiosRequestConfig
   ): Promise<AxiosResponse> {
     return await this.client.delete(this.getURL(slug, config?.query), {
