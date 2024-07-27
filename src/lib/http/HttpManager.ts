@@ -31,6 +31,7 @@ export class HttpClient {
 
   constructor(
     protected config: SpotifyConfig,
+    // eslint-disable-next-line no-unused-vars
     protected privateConfig: PrivateConfig
   ) {
     if (config.http?.baseURL) {
