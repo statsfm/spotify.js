@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 export class AuthError extends Error {
   data: Record<string, unknown>;
   name = AuthError.name;
