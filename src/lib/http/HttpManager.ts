@@ -8,7 +8,6 @@ import * as https from 'https';
 import { ClientRequest } from 'http';
 import axiosBetterStacktrace from 'axios-better-stacktrace';
 import {
-  AuthError,
   BadRequestError,
   ForbiddenError,
   NotFoundError,
@@ -18,34 +17,23 @@ import {
 } from '../../interfaces/Errors';
 import { PrivateConfig, SpotifyConfig } from '../../interfaces/Config';
 import { sleep } from '../../util/sleep';
-
-const accountsApiUrl = 'https://accounts.spotify.com/api';
-
-const accessTokenExpireTTL = 60 * 60 * 1_000; // 1hour
+import { AuthManager } from './AuthManager';
 
 export class HttpClient {
   protected baseURL = 'https://api.spotify.com';
 
+  protected auth: AuthManager;
   protected client: AxiosInstance;
-  protected authClient: AxiosInstance;
 
   constructor(
     protected config: SpotifyConfig,
-    // eslint-disable-next-line no-unused-vars
-    protected privateConfig: PrivateConfig
+    privateConfig: PrivateConfig
   ) {
     if (config.http?.baseURL) {
       this.baseURL = config.http.baseURL;
     }
 
-    this.authClient = axios.create({
-      baseURL: accountsApiUrl,
-      auth: {
-        username: this.config.clientCredentials?.clientId,
-        password: this.config.clientCredentials?.clientSecret
-      },
-      validateStatus: () => true
-    });
+    this.auth = new AuthManager(config, privateConfig);
 
     this.client = this.create();
     this.client.interceptors.response.use(
@@ -66,145 +54,6 @@ export class HttpClient {
     url.search = new URLSearchParams(query).toString();
 
     return url.toString();
-  }
-
-  /**
-   * @description Get a refresh token.
-   * @param {number} retryAmount The amount of retries.
-   * @returns {string} Returns the refresh token.
-   */
-  private async refreshToken(retryAmount = 0): Promise<string> {
-    if (
-      !this.config.clientCredentials.clientId ||
-      !this.config.clientCredentials.clientSecret ||
-      !this.config.refreshToken
-    ) {
-      throw new AuthError(
-        'Missing information needed to refresh token, required: client id, client secret, refresh token'
-      );
-    }
-
-    const response = await this.authClient.post(
-      '/token',
-      new URLSearchParams({
-        grant_type: 'refresh_token',
-        refresh_token: this.config.refreshToken
-      })
-    );
-
-    const { status: statusCode } = response;
-
-    if (statusCode === 200) {
-      return response.data.access_token;
-    }
-
-    if (statusCode === 400) {
-      throw new AuthError('Failed to refresh token: bad request', {
-        data: response.data
-      });
-    }
-
-    if (retryAmount === 5) {
-      if (statusCode >= 500 && statusCode < 600) {
-        throw new AuthError(`Failed to refresh token: server error (${statusCode})`);
-      }
-
-      throw new AuthError(`Request retry attempts exceeded, failed with status code ${statusCode}`);
-    }
-
-    if (this.config.debug) {
-      console.log(
-        `Failed to refresh token: got (${statusCode}) response. Retrying... (${retryAmount + 1})`
-      );
-    }
-
-    return await this.refreshToken(retryAmount + 1);
-  }
-
-  /**
-   * Get authorization token with client credentials flow.
-   * @param {number} retryAmount The amount of retries.
-   * @returns {string} Returns the authorization token.
-   */
-  private async getToken(retryAmount = 0): Promise<string> {
-    const response = await this.authClient.post(
-      '/token',
-      new URLSearchParams({
-        grant_type: 'client_credentials'
-      })
-    );
-
-    const { status: statusCode } = response;
-
-    if (statusCode === 200) {
-      return response.data.access_token;
-    }
-
-    if (statusCode === 400) {
-      throw new AuthError(`Failed to get token: bad request`, {
-        data: response.data
-      });
-    }
-
-    if (retryAmount === 5) {
-      if (statusCode >= 500 && statusCode < 600) {
-        throw new AuthError(`Failed to get token: server error (${statusCode})`);
-      }
-
-      throw new AuthError(`Request retry attempts exceeded, failed with status code ${statusCode}`);
-    }
-
-    if (typeof this.config.debug === 'boolean' && this.config.debug === true) {
-      console.log(
-        `Failed to get token: got (${statusCode}) response. retrying... (${retryAmount + 1})`
-      );
-    }
-
-    return await this.getToken(retryAmount + 1);
-  }
-
-  /**
-   * @description Handles the auth tokens.
-   * @returns {string} Returns a auth token.
-   */
-  private async handleAuth(): Promise<string> {
-    if (this.config.accessToken) {
-      // check if token is expired
-      if (this.privateConfig.tokenExpireAt < Date.now()) {
-        this.config.accessToken = undefined;
-
-        return await this.handleAuth();
-      }
-
-      // return already defined access token
-      return this.config.accessToken;
-    }
-
-    // refresh token
-    if (
-      this.config?.clientCredentials?.clientId &&
-      this.config?.clientCredentials?.clientSecret &&
-      this.config?.refreshToken
-    ) {
-      const accessToken = await this.refreshToken();
-
-      this.config.accessToken = accessToken;
-      this.privateConfig.tokenExpireAt = Date.now() + accessTokenExpireTTL;
-
-      return accessToken;
-    }
-
-    // add credentials flow
-    if (this.config?.clientCredentials?.clientId && this.config?.clientCredentials?.clientSecret) {
-      const accessToken = await this.getToken();
-
-      this.config.accessToken = accessToken;
-      this.privateConfig.tokenExpireAt = Date.now() + accessTokenExpireTTL;
-
-      return accessToken;
-    }
-
-    throw new AuthError('auth failed: missing information to handle auth');
   }
 
   /**
@@ -241,7 +90,7 @@ export class HttpClient {
 
     // request interceptor
     client.interceptors.request.use(async (config) => {
-      const accessToken = await this.handleAuth();
+      const accessToken = await this.auth.getToken();
 
       config.headers.Authorization = `Bearer ${accessToken}`;
 
