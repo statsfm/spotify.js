@@ -18,6 +18,7 @@ import {
 import { PrivateConfig, SpotifyConfig } from '../../interfaces/Config';
 import { sleep } from '../../util/sleep';
 import { AuthManager } from './AuthManager';
+import { attach, RetryInterceptor } from './RetryInterceptor';
 
 export class HttpClient {
   protected baseURL = 'https://api.spotify.com';
@@ -35,11 +36,15 @@ export class HttpClient {
 
     this.auth = new AuthManager(config, privateConfig);
 
+    const retryInterceptor = new RetryInterceptor({
+      onRetryAttempt(error): void {
+        console.log('do retry for', error.config.url);
+      }
+    });
+
     this.client = this.create();
-    this.client.interceptors.response.use(
-      (response) => response,
-      (error: AxiosError<Record<string, unknown>>) => this.errorHandler(error)
-    );
+
+    attach(this.client, retryInterceptor);
   }
 
   /**
