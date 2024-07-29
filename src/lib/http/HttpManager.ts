@@ -64,6 +64,11 @@ export class HttpClient {
   private createClient(): AxiosInstance {
     const config: AxiosRequestConfig = {
       proxy: this.config.http?.proxy,
+      headers: {
+        ...this.config.http?.headers,
+        'User-Agent':
+          this.config.http?.userAgent ?? `@statsfm/spotify.js https://github.com/statsfm/spotify.js`
+      },
       validateStatus: (status) => status >= 200 && status < 300
     };
 
@@ -91,14 +96,11 @@ export class HttpClient {
       const accessToken = await this.auth.getToken();
 
       config.headers.Authorization = `Bearer ${accessToken}`;
-      config.headers['User-Agent'] =
-        this.config.http?.userAgent ?? `@statsfm/spotify.js https://github.com/statsfm/spotify.js`;
-      config.headers = Object.assign(this.config.http?.headers ?? {}, config.headers);
 
       return config;
     });
 
-    // attach error handling interceptor
+    // error handling interceptor
     client.interceptors.response.use(
       (response) => response,
       (err: unknown) => this.handleError(client, err)
