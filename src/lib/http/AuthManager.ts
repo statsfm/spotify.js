@@ -31,7 +31,7 @@ export class AuthManager {
    * @param {number} retryAttempt Number of of retries.
    * @returns {string} Returns the refresh token.
    */
-  private async refreshToken(retryAttempt): Promise<string> {
+  private async refreshToken(retryAttempt: number): Promise<string> {
     if (
       !this.config.clientCredentials.clientId ||
       !this.config.clientCredentials.clientSecret ||
@@ -84,7 +84,7 @@ export class AuthManager {
    * @param {number} retryAttempt Number of of retries.
    * @returns {string} Returns the authorization token.
    */
-  private async requestToken(retryAttempt): Promise<string> {
+  private async requestToken(retryAttempt: number): Promise<string> {
     const response = await this.client.post(
       '/token',
       new URLSearchParams({
@@ -132,9 +132,6 @@ export class AuthManager {
         // return already defined access token
         return this.config.accessToken;
       }
-
-      // reset token to force trigger refresh
-      this.config.accessToken = undefined;
     }
 
     // refresh token
