@@ -127,6 +127,11 @@ export class AuthManager {
    */
   async getToken(): Promise<string> {
     if (this.config.accessToken) {
+      // non-expirable token
+      if (typeof this.privateConfig.tokenExpireAt === 'undefined') {
+        return this.config.accessToken;
+      }
+
       // check if token is expired
       if (Date.now() < this.privateConfig.tokenExpireAt) {
         // return already defined access token
