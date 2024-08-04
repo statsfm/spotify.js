@@ -6,3 +6,7 @@ src
 .vscode
 node_modules
 test.mjs
+docs
+.yarn/*
+.yarnrc.yml
+*.log
