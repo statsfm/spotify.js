@@ -2,13 +2,18 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 
-import axios, { AxiosError, AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
+import axios, {
+  AxiosError,
+  AxiosInstance,
+  AxiosRequestConfig,
+  AxiosResponse,
+  InternalAxiosRequestConfig
+} from 'axios';
 import { URL, URLSearchParams } from 'url';
 import * as https from 'https';
 import { ClientRequest } from 'http';
 import axiosBetterStacktrace from 'axios-better-stacktrace';
 import {
-  AuthError,
   BadRequestError,
   ForbiddenError,
   NotFoundError,
@@ -18,21 +23,25 @@ import {
 } from '../../interfaces/Errors';
 import { PrivateConfig, SpotifyConfig } from '../../interfaces/Config';
 import { sleep } from '../../util/sleep';
+import { AuthManager } from './AuthManager';
+
+type ConfigWithRetry = InternalAxiosRequestConfig & { retryAttempt?: number };
 
 export class HttpClient {
   protected baseURL = 'https://api.spotify.com';
 
-  protected tokenURL = 'https://accounts.spotify.com/api/token';
-
-  protected client = this.create({ resInterceptor: true });
+  protected auth: AuthManager;
+  protected client = this.createClient();
 
   constructor(
     protected config: SpotifyConfig,
-    protected privateConfig: PrivateConfig
+    privateConfig: PrivateConfig
   ) {
     if (config.http?.baseURL) {
       this.baseURL = config.http.baseURL;
     }
+
+    this.auth = new AuthManager(config, privateConfig);
   }
 
   /**
@@ -42,6 +51,7 @@ export class HttpClient {
    */
   getURL(slug: string, query?: Record<string, string>): string {
     const url = new URL(this.baseURL);
+
     url.pathname = slug;
     url.search = new URLSearchParams(query).toString();
 
@@ -49,155 +59,17 @@ export class HttpClient {
   }
 
   /**
-   * @description Get a refresh token.
-   * @param {number} retryAmount The amount of retries.
-   * @returns {string} Returns the refresh token.
-   */
-  private async refreshToken(retryAmount = 0): Promise<string> {
-    if (
-      !this.config.clientCredentials.clientId ||
-      !this.config.clientCredentials.clientSecret ||
-      !this.config.refreshToken
-    ) {
-      throw new AuthError(
-        'Missing information needed to refresh token, required: client id, client secret, refresh token'
-      );
-    }
-
-    const res = await axios.post(
-      this.tokenURL,
-      new URLSearchParams({
-        grant_type: 'refresh_token',
-        refresh_token: this.config.refreshToken
-      }),
-      {
-        headers: {
-          authorization: `Basic ${Buffer.from(
-            `${this.config.clientCredentials.clientId}:${this.config.clientCredentials.clientSecret}`
-          ).toString('base64')}`
-        },
-        validateStatus: () => true
-      }
-    );
-
-    if (res.status !== 200) {
-      if (res.status === 400) {
-        throw new AuthError(`Refreshing token failed: Bad request`, { data: res.data });
-      }
-
-      if (res.status >= 500 && res.status < 600) {
-        throw new AuthError(`Refreshing token failed: server error (${res.status})`);
-      }
-
-      if (retryAmount < 5) {
-        if (this.config.debug) {
-          console.log(`Refreshing token failed (${res.status}). Retrying... (${retryAmount + 1})`);
-        }
-        await this.refreshToken(retryAmount + 1);
-      } else {
-        throw new AuthError(`Refreshing token failed (${res.status})`);
-      }
-    }
-
-    this.config.accessToken = res.data.access_token;
-
-    // save expire now
-    this.privateConfig.tokenExpire = new Date(
-      new Date().setSeconds(new Date().getSeconds() + 3600)
-    );
-
-    return this.config.accessToken;
-  }
-
-  /**
-   * Get authorization token with client credentials flow.
-   * @param {number} retryAmount The amount of retries.
-   * @returns {string} Returns the authorization token.
-   */
-  private async getToken(retryAmount = 0): Promise<string> {
-    const res = await axios.post(
-      this.tokenURL,
-      new URLSearchParams({
-        grant_type: 'client_credentials'
-      }),
-      {
-        headers: {
-          authorization: `Basic ${Buffer.from(
-            `${this.config.clientCredentials.clientId}:${this.config.clientCredentials.clientSecret}`
-          ).toString('base64')}`
-        },
-        validateStatus: () => true
-      }
-    );
-
-    // error handling
-    if (res.status !== 200) {
-      if (res.status === 400) {
-        throw new AuthError(
-          `getting token failed: bad request\n${JSON.stringify(res.data, null, ' ')}`
-        );
-      }
-
-      if (retryAmount < 5) {
-        if (typeof this.config.debug === 'boolean' && this.config.debug === true) {
-          console.log(`getting token failed (${res.status}). retrying... (${retryAmount + 1})`);
-        }
-        await this.getToken(retryAmount + 1);
-      } else if (res.status < 600 && res.status >= 500) {
-        throw new AuthError(`getting token failed: server error (${res.status})`);
-      } else {
-        throw new AuthError(`getting token failed (${res.status})`);
-      }
-    }
-
-    this.config.accessToken = res.data.access_token;
-
-    this.privateConfig.tokenExpire = new Date(
-      new Date().setSeconds(new Date().getSeconds() + 3600)
-    );
-
-    return this.config.accessToken;
-  }
-
-  /**
-   * @description Handles the auth tokens.
-   * @returns {string} Returns a auth token.
-   */
-  private async handleAuth(): Promise<string> {
-    if (this.config.accessToken) {
-      // check if token is expired
-      if (new Date() >= this.privateConfig.tokenExpire) {
-        this.config.accessToken = undefined;
-        return await this.handleAuth();
-      }
-
-      // return already defined access token
-      return this.config.accessToken;
-    }
-
-    // refresh token
-    if (
-      this.config?.clientCredentials?.clientId &&
-      this.config?.clientCredentials?.clientSecret &&
-      this.config?.refreshToken
-    ) {
-      return await this.refreshToken(); // refresh token
-    }
-
-    // add credentials flow
-    if (this.config?.clientCredentials?.clientId && this.config?.clientCredentials?.clientSecret) {
-      return await this.getToken();
-    }
-
-    throw new AuthError('auth failed: missing information to handle auth');
-  }
-
-  /**
    * Create an axios instance, set interceptors, handle errors & auth.
    */
-  private create(options: { resInterceptor?: boolean }): AxiosInstance {
+  private createClient(): AxiosInstance {
     const config: AxiosRequestConfig = {
-      proxy: this.config.http?.proxy
+      proxy: this.config.http?.proxy,
+      headers: {
+        ...this.config.http?.headers,
+        'User-Agent':
+          this.config.http?.userAgent ?? `@statsfm/spotify.js https://github.com/statsfm/spotify.js`
+      },
+      validateStatus: (status) => status >= 200 && status < 300
     };
 
     if (this.config.http?.localAddress) {
@@ -214,81 +86,46 @@ export class HttpClient {
           )
       };
     }
+
     const client = axios.create(config);
+
     axiosBetterStacktrace(client);
 
     // request interceptor
     client.interceptors.request.use(async (config) => {
-      config.headers.Authorization = `Bearer ${await this.handleAuth()}`;
-      config.headers['User-Agent'] =
-        this.config.http?.userAgent ?? `@statsfm/spotify.js https://github.com/statsfm/spotify.js`;
-      config.headers = Object.assign(this.config.http?.headers ?? {}, config.headers);
+      const accessToken = await this.auth.getToken();
+
+      config.headers.Authorization = `Bearer ${accessToken}`;
 
       return config;
     });
 
-    if (options.resInterceptor || options.resInterceptor === undefined) {
-      // Response interceptor
-      client.interceptors.response.use((config) => config, this.errorHandler.bind(this, client));
-    }
+    // error handling interceptor
+    client.interceptors.response.use(
+      (response) => response,
+      (err: unknown) => this.handleError(client, err)
+    );
 
     return client;
   }
 
-  private async errorHandler(
-    client: AxiosInstance,
-    err: AxiosError<Record<string, unknown>>
-  ): Promise<AxiosResponse> {
-    if (!axios.isAxiosError(err) || !err.response) {
-      throw err;
+  private async handleError(client: AxiosInstance, err: unknown): Promise<AxiosResponse> {
+    if (axios.isCancel(err) || axios.isAxiosError(err) === false || !this.shouldRetryRequest(err)) {
+      return await Promise.reject(this.extractResponseError(err));
     }
 
-    const { response } = err;
+    const requestConfig = err.config as ConfigWithRetry;
 
-    const { status: statusCode } = response;
+    requestConfig.retryAttempt ||= 0;
 
-    switch (statusCode) {
-      case 400:
-        throw new BadRequestError(err.config.url, {
-          stack: err.stack,
-          data: response.data
-        });
+    const isRateLimited = err.response && err.response.status === 429;
 
-      case 401:
-        throw new UnauthorizedError(err.config.url, {
-          stack: err.stack,
-          data: response.data
-        });
+    if (isRateLimited) {
+      if (this.config.logRetry) {
+        console.log(err.response);
+      }
 
-      case 403:
-        throw new ForbiddenError(err.config.url, {
-          stack: err.stack,
-          data: response.data
-        });
-
-      case 404:
-        throw new NotFoundError(err.config.url, err.stack);
-
-      case 429:
-        await this.handleRateLimit(response, err);
-        break;
-
-      default:
-        if (statusCode >= 500 && statusCode < 600) {
-          return await this.handle5xxErrors(response, err, statusCode);
-        } else {
-          throw err;
-        }
-    }
-  }
-
-  private async handleRateLimit(res: AxiosResponse, err: AxiosError): Promise<AxiosResponse> {
-    if (this.config.logRetry) {
-      console.log(res);
-    }
-
-    if (this.config.retry || this.config.retry === undefined) {
-      const retryAfter = parseInt(res.headers['retry-after']) || 0;
+      const retryAfter = Number(err.response.headers['retry-after']) || 0;
 
       if (this.config.logRetry || this.config.logRetry === undefined) {
         console.error(
@@ -297,94 +134,141 @@ export class HttpClient {
       }
 
       await sleep(retryAfter * 1_000);
-      return await this.client.request(err.config);
+
+      requestConfig.retryAttempt = 0;
     } else {
-      throw new RatelimitError(
-        `Hit ratelimit, retry after ${res.headers['retry-after']} seconds`,
-        err.config.url,
-        {
-          stack: err.stack,
-          data: res.data
-        }
-      );
-    }
-  }
-
-  private async handle5xxErrors(
-    res: AxiosResponse,
-    err: AxiosError,
-    statusCode: number
-  ): Promise<AxiosResponse> {
-    if (!this.config.retry5xx && this.config.retry5xx !== undefined) {
-      throw err;
-    }
-
-    this.config.retry5xxAmount = this.config.retry5xxAmount || 3;
-    const nClient = this.create({ resInterceptor: false });
-
-    for (let i = 1; i <= this.config.retry5xxAmount; i++) {
-      if (this.config.debug) {
-        console.log(`(${i}/${this.config.retry5xxAmount}) retry ${err.config.url} - ${statusCode}`);
-      }
-
       await sleep(1_000);
 
-      try {
-        const nRes = await nClient.request(err.config);
+      requestConfig.retryAttempt! += 1;
 
-        if (nRes.status >= 200 && nRes.status < 300) {
-          return nRes;
-        }
-        statusCode = nRes.status;
-      } catch (error) {
-        if (!axios.isAxiosError(error) || !error.response) {
-          throw error;
-        }
-
-        statusCode = error.response.status;
-        switch (statusCode) {
-          case 429:
-            await this.handleRateLimit(error.response, error);
-            break;
-
-          case 401:
-            throw new UnauthorizedError(error.config.url, {
-              stack: error.stack,
-              data: res.data
-            });
-
-          case 403:
-            throw new ForbiddenError(error.config.url, {
-              stack: error.stack,
-              data: res.data
-            });
-
-          case 404:
-            throw new NotFoundError(error.config.url, error.stack);
-
-          default:
-            if (i === this.config.retry5xxAmount) {
-              throw new RequestRetriesExceededError(
-                `Request exceeded ${this.config.retry5xxAmount} number of retry attempts, failed with status code ${statusCode}`,
-                error.config.url,
-                error.stack
-              );
-            }
-        }
+      if (this.config.debug) {
+        console.log(
+          `(${requestConfig.retryAttempt}/${this.maxRetryAttempts}) retry ${requestConfig.url} - ${err}`
+        );
       }
     }
+
+    return await client.request(requestConfig);
+  }
+
+  private shouldRetryRequest(err: AxiosError): boolean {
+    // non-response errors should clarified as 5xx and retried (socket hangup, ECONNRESET, etc.)
+    if (!err.response) {
+      if (this.config.retry5xx === false) {
+        return false;
+      }
+
+      const { retryAttempt = 0 } = err.config as ConfigWithRetry;
+
+      return retryAttempt < this.maxRetryAttempts;
+    }
+
+    const { status } = err.response;
+
+    if (status === 429) {
+      return this.config.retry !== false;
+    }
+
+    if (status >= 500 && status < 600) {
+      if (this.config.retry5xx === false) {
+        return false;
+      }
+
+      const { retryAttempt = 0 } = err.config as ConfigWithRetry;
+
+      return retryAttempt < this.maxRetryAttempts;
+    }
+
+    return false;
+  }
+
+  private extractResponseError(err: unknown): unknown {
+    if (axios.isCancel(err) || axios.isAxiosError(err) === false) {
+      return err;
+    }
+
+    // non-response errors should clarified as 5xx and retried (socket hangup, ECONNRESET, etc.)
+    if (!err.response) {
+      const { retryAttempt = 0 } = err.config as ConfigWithRetry;
+
+      if (this.config.retry5xx === false || retryAttempt < this.maxRetryAttempts) {
+        return err;
+      }
+
+      return new RequestRetriesExceededError(
+        `Request max${this.maxRetryAttempts} retry attempts exceeded`,
+        err.config.url,
+        err.stack
+      );
+    }
+
+    const { stack, config, response } = err;
+    const { status, headers, data } = response;
+
+    if (status >= 500 && status < 600) {
+      const { retryAttempt } = err.config as ConfigWithRetry;
+
+      if (this.config.retry5xx === false || retryAttempt < this.maxRetryAttempts) {
+        return err;
+      }
+
+      return new RequestRetriesExceededError(
+        `Request ${this.maxRetryAttempts} retry attempts exceeded`,
+        err.config.url,
+        err.stack
+      );
+    }
+
+    switch (status) {
+      case 400:
+        return new BadRequestError(config.url, {
+          stack,
+          data
+        });
+
+      case 401:
+        return new UnauthorizedError(config.url, {
+          stack,
+          data
+        });
+
+      case 403:
+        return new ForbiddenError(config.url, {
+          stack,
+          data
+        });
+
+      case 404:
+        throw new NotFoundError(config.url, stack);
+
+      case 429:
+        return new RatelimitError(
+          `Hit ratelimit, retry after ${headers['retry-after']} seconds`,
+          err.config.url,
+          {
+            stack,
+            data
+          }
+        );
+    }
+
+    return err;
+  }
+
+  private get maxRetryAttempts(): number {
+    return this.config.retry5xxAmount ?? 3;
   }
 
   /**
    * @param {string} slug The slug to get.
-   * @param {{query?: Record<string, string> & AxiosRequestConfig}} options Options.
+   * @param {{query?: Record<string, string> & AxiosRequestConfig}} config Config.
    * @returns {Promise<AxiosResponse>} Returns a promise with the response.
    */
   async get(
     slug: string,
-    options?: { query?: Record<string, string> } & AxiosRequestConfig
+    config?: { query?: Record<string, string> } & AxiosRequestConfig
   ): Promise<AxiosResponse> {
-    return await this.client.get(this.getURL(slug, options?.query), options);
+    return await this.client.get(this.getURL(slug, config?.query), config);
   }
 
   /**
@@ -395,7 +279,7 @@ export class HttpClient {
    */
   async post(
     slug: string,
-    data: any,
+    data: unknown,
     config?: { query?: Record<string, string> } & AxiosRequestConfig
   ): Promise<AxiosResponse> {
     return await this.client.post(this.getURL(slug, config?.query), data, config);
@@ -409,7 +293,7 @@ export class HttpClient {
    */
   async put(
     slug: string,
-    data: any,
+    data: unknown,
     config?: { query?: Record<string, string> } & AxiosRequestConfig
   ): Promise<AxiosResponse> {
     return await this.client.put(this.getURL(slug, config?.query), data, config);
@@ -417,17 +301,17 @@ export class HttpClient {
 
   /**
    * @param {string} slug The slug to delete.
-   * @param {any} data Body data.
-   * @param {{Record<string, string> & RequestInit}} options Options.
+   * @param {unknown} data Body data.
+   * @param {{Record<string, string> & RequestInit}} config Config.
    * @returns {Promise<Response>} Returns a promise with the response.
    */
   async delete(
     slug: string,
-    data: any,
-    options?: { query?: Record<string, string> } & AxiosRequestConfig
+    data: unknown,
+    config?: { query?: Record<string, string> } & AxiosRequestConfig
   ): Promise<AxiosResponse> {
-    return await this.client.delete(this.getURL(slug, options?.query), {
-      ...options,
+    return await this.client.delete(this.getURL(slug, config?.query), {
+      ...config,
       data
     });
   }

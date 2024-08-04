@@ -2,6 +2,7 @@ import { PrivateConfig, SpotifyConfig } from '../interfaces/Config';
 import { AlbumManager } from './album/AlbumManager';
 import { ArtistManager } from './artist/ArtistManager';
 import { AudioManager } from './audio/AudioManager';
+import { HttpClient } from './http/HttpManager';
 import { MeManager } from './me/MeManager';
 import { PlaylistManager } from './playlist/PlaylistManager';
 import { RecommendationsManager } from './recommendations/RecommendationsManager';
@@ -30,11 +31,7 @@ export class SpotifyAPI {
 
   private privateConfig: PrivateConfig = {};
 
-  config: SpotifyConfig;
-
-  constructor(config: SpotifyConfig) {
-    this.config = config;
-
+  constructor(public config: SpotifyConfig) {
     // TODO: remove for v2
     // eslint-disable-next-line deprecation/deprecation
     if (!this.config.accessToken && config.acccessToken) {
@@ -42,14 +39,16 @@ export class SpotifyAPI {
       this.config.accessToken = config.acccessToken;
     }
 
-    this.tracks = new TrackManager(this.config, this.privateConfig);
-    this.albums = new AlbumManager(this.config, this.privateConfig);
-    this.artists = new ArtistManager(this.config, this.privateConfig);
-    this.users = new UserManager(this.config, this.privateConfig);
-    this.me = new MeManager(this.config, this.privateConfig);
-    this.search = new SearchManager(this.config, this.privateConfig);
-    this.recommendations = new RecommendationsManager(this.config, this.privateConfig);
-    this.audio = new AudioManager(this.config, this.privateConfig);
-    this.playlist = new PlaylistManager(this.config, this.privateConfig);
+    const client = new HttpClient(this.config, this.privateConfig);
+
+    this.tracks = new TrackManager(client);
+    this.albums = new AlbumManager(client);
+    this.artists = new ArtistManager(client);
+    this.users = new UserManager(client);
+    this.me = new MeManager(client);
+    this.search = new SearchManager(client);
+    this.recommendations = new RecommendationsManager(client);
+    this.audio = new AudioManager(client);
+    this.playlist = new PlaylistManager(client);
   }
 }

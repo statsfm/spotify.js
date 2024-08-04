@@ -1,11 +1,6 @@
-import { PrivateConfig, SpotifyConfig } from '../interfaces/Config';
 import { HttpClient } from './http/HttpManager';
 
-export class Manager {
-  protected http = new HttpClient(this.config, this.privateConfig);
-
-  constructor(
-    protected config: SpotifyConfig,
-    protected privateConfig: PrivateConfig
-  ) {}
+export abstract class Manager {
+  // eslint-disable-next-line no-unused-vars
+  constructor(protected readonly http: HttpClient) {}
 }
