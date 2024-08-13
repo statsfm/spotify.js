@@ -119,7 +119,6 @@ export class HttpClient {
     requestConfig.retryAttempt ||= 0;
 
     const isRateLimited = err.response && err.response.status === 429;
-    const isConnectionReset = (err as AxiosError).code === 'ECONNRESET';
 
     if (isRateLimited) {
       if (this.config.logRetry) {
@@ -137,16 +136,6 @@ export class HttpClient {
       await sleep(retryAfter * 1_000);
 
       requestConfig.retryAttempt = 0;
-    } else if (isConnectionReset) {
-      await sleep(1_000 * (requestConfig.retryAttempt + 1));
-
-      requestConfig.retryAttempt += 1;
-
-      if (this.config.debug) {
-        console.log(
-          `(${requestConfig.retryAttempt}/${this.maxRetryAttempts}) retry ${requestConfig.url} - ${err}`
-        );
-      }
     } else {
       await sleep(1_000);
 
