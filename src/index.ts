@@ -1,6 +1,6 @@
 export * from './lib/SpotifyAPI';
 export * from './lib/Manager';
-export * from './lib/http/HttpManager';
+export * from './lib/http/HttpClient';
 export * from './lib/album/AlbumManager';
 export * from './lib/artist/ArtistManager';
 export * from './lib/audio/AudioManager';

@@ -1,4 +1,4 @@
-import { HttpClient } from './http/HttpManager';
+import { HttpClient } from './http/HttpClient';
 
 export abstract class Manager {
   // eslint-disable-next-line no-unused-vars

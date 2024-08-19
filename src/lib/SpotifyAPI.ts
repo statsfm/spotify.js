@@ -2,7 +2,7 @@ import { PrivateConfig, SpotifyConfig } from '../interfaces/Config';
 import { AlbumManager } from './album/AlbumManager';
 import { ArtistManager } from './artist/ArtistManager';
 import { AudioManager } from './audio/AudioManager';
-import { HttpClient } from './http/HttpManager';
+import { HttpClient } from './http/HttpClient';
 import { MeManager } from './me/MeManager';
 import { PlaylistManager } from './playlist/PlaylistManager';
 import { RecommendationsManager } from './recommendations/RecommendationsManager';
