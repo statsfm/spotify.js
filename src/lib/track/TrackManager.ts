@@ -1,6 +1,6 @@
 import { Track } from '../../interfaces/Spotify';
 import { Manager } from '../Manager';
-import { chunk } from '../../util';
+import { chunk } from '../../util/chunk';
 
 export class TrackManager extends Manager {
   /**
