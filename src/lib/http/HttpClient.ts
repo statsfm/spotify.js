@@ -5,8 +5,8 @@
 import axios, {
   AxiosError,
   AxiosInstance,
+  AxiosPromise,
   AxiosRequestConfig,
-  AxiosResponse,
   InternalAxiosRequestConfig
 } from 'axios';
 import { URL, URLSearchParams } from 'url';
@@ -20,7 +20,7 @@ import {
   RatelimitError,
   RequestRetriesExceededError,
   UnauthorizedError
-} from '../../interfaces/Errors';
+} from '../errors';
 import { PrivateConfig, SpotifyConfig } from '../../interfaces/Config';
 import { sleep } from '../../util/sleep';
 import { AuthManager } from './AuthManager';
@@ -109,7 +109,7 @@ export class HttpClient {
     return client;
   }
 
-  private async handleError(client: AxiosInstance, err: unknown): Promise<AxiosResponse> {
+  private async handleError(client: AxiosInstance, err: unknown): AxiosPromise {
     if (axios.isCancel(err) || axios.isAxiosError(err) === false || !this.shouldRetryRequest(err)) {
       return await Promise.reject(this.extractResponseError(err));
     }
@@ -119,7 +119,6 @@ export class HttpClient {
     requestConfig.retryAttempt ||= 0;
 
     const isRateLimited = err.response && err.response.status === 429;
-    const isConnectionReset = (err as AxiosError).code === 'ECONNRESET';
 
     if (isRateLimited) {
       if (this.config.logRetry) {
@@ -137,16 +136,6 @@ export class HttpClient {
       await sleep(retryAfter * 1_000);
 
       requestConfig.retryAttempt = 0;
-    } else if (isConnectionReset) {
-      await sleep(1_000 * (requestConfig.retryAttempt + 1));
-
-      requestConfig.retryAttempt += 1;
-
-      if (this.config.debug) {
-        console.log(
-          `(${requestConfig.retryAttempt}/${this.maxRetryAttempts}) retry ${requestConfig.url} - ${err}`
-        );
-      }
     } else {
       await sleep(1_000);
 
@@ -273,12 +262,12 @@ export class HttpClient {
   /**
    * @param {string} slug The slug to get.
    * @param {{query?: Record<string, string> & AxiosRequestConfig}} config Config.
-   * @returns {Promise<AxiosResponse>} Returns a promise with the response.
+   * @returns {AxiosPromise} Returns a promise with the response.
    */
   async get(
     slug: string,
     config?: { query?: Record<string, string> } & AxiosRequestConfig
-  ): Promise<AxiosResponse> {
+  ): AxiosPromise {
     return await this.client.get(this.getURL(slug, config?.query), config);
   }
 
@@ -286,13 +275,13 @@ export class HttpClient {
    * @param {string} slug The slug to post.
    * @param {any} data Body data.
    * @param {{Record<string, string> & RequestInit}} config Config.
-   * @returns {Promise<Response>} Returns a promise with the response.
+   * @returns {AxiosPromise} Returns a promise with the response.
    */
   async post(
     slug: string,
     data: unknown,
     config?: { query?: Record<string, string> } & AxiosRequestConfig
-  ): Promise<AxiosResponse> {
+  ): AxiosPromise {
     return await this.client.post(this.getURL(slug, config?.query), data, config);
   }
 
@@ -300,13 +289,13 @@ export class HttpClient {
    * @param {string} slug The slug to put.
    * @param {any} data Body data.
    * @param {{Record<string, string> & RequestInit}} config Config.
-   * @returns {Promise<Response>} Returns a promise with the response.
+   * @returns {AxiosPromise} Returns a promise with the response.
    */
   async put(
     slug: string,
     data: unknown,
     config?: { query?: Record<string, string> } & AxiosRequestConfig
-  ): Promise<AxiosResponse> {
+  ): AxiosPromise {
     return await this.client.put(this.getURL(slug, config?.query), data, config);
   }
 
@@ -314,13 +303,13 @@ export class HttpClient {
    * @param {string} slug The slug to delete.
    * @param {unknown} data Body data.
    * @param {{Record<string, string> & RequestInit}} config Config.
-   * @returns {Promise<Response>} Returns a promise with the response.
+   * @returns {AxiosPromise} Returns a promise with the response.
    */
   async delete(
     slug: string,
     data: unknown,
     config?: { query?: Record<string, string> } & AxiosRequestConfig
-  ): Promise<AxiosResponse> {
+  ): AxiosPromise {
     return await this.client.delete(this.getURL(slug, config?.query), {
       ...config,
       data

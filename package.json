@@ -36,5 +36,5 @@
     "axios": "^1.7.2",
     "axios-better-stacktrace": "^2.1.6"
   },
-  "packageManager": "yarn@4.3.1"
+  "packageManager": "yarn@4.4.0"
 }

@@ -1,4 +1,4 @@
-import { chunk } from '../../util';
+import { chunk } from '../../util/chunk';
 import {
   Album,
   Markets,
