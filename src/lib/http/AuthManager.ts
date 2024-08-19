@@ -1,6 +1,6 @@
 /* eslint-disable no-console */
 import axios, { AxiosInstance } from 'axios';
-import { AuthError } from '../../interfaces/Errors';
+import { AuthError } from '../errors';
 import { PrivateConfig, SpotifyConfig } from '../../interfaces/Config';
 
 const accountsApiUrl = 'https://accounts.spotify.com/api';

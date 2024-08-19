@@ -20,7 +20,7 @@ import {
   RatelimitError,
   RequestRetriesExceededError,
   UnauthorizedError
-} from '../../interfaces/Errors';
+} from '../errors';
 import { PrivateConfig, SpotifyConfig } from '../../interfaces/Config';
 import { sleep } from '../../util/sleep';
 import { AuthManager } from './AuthManager';
