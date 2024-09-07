@@ -158,7 +158,7 @@ export class MeManager extends Manager {
     // Use an async loop to preserve the order of unsaves
     for (let i = 0; i < ids.length; i += 50) {
       await this.http.delete(`/v1/me/tracks`, {
-        query: { ids: ids.slice(i, i + 50).join(',') }
+        ids: ids.slice(i, i + 50)
       });
     }
   }
