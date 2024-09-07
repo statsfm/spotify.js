@@ -142,9 +142,12 @@ export class MeManager extends Manager {
    * @param {string} ids Array of IDs.
    */
   async saveTracks(ids: string[]): Promise<void> {
-    await this.http.put(`/v1/me/tracks`, {
-      ids
-    });
+    // Use an async loop to preserve the order of saves
+    for (let i = 0; i < ids.length; i += 50) {
+      await this.http.put(`/v1/me/tracks`, {
+        ids: ids.slice(i, i + 50)
+      });
+    }
   }
 
   /**
@@ -152,9 +155,12 @@ export class MeManager extends Manager {
    * @param {string} ids Array of IDs.
    */
   async unsaveTracks(ids: string[]): Promise<void> {
-    await this.http.delete(`/v1/me/tracks`, {
-      query: { ids: ids.join(',') }
-    });
+    // Use an async loop to preserve the order of unsaves
+    for (let i = 0; i < ids.length; i += 50) {
+      await this.http.delete(`/v1/me/tracks`, {
+        query: { ids: ids.slice(i, i + 50).join(',') }
+      });
+    }
   }
 
   async playlists(options?: {
