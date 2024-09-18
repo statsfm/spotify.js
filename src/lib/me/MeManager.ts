@@ -143,9 +143,9 @@ export class MeManager extends Manager {
    */
   async saveTracks(ids: string[]): Promise<void> {
     // Use an async loop to preserve the order of saves
-    for (let i = 0; i < ids.length; i += 50) {
+    for (const chunkIds of chunk(ids, 50)) {
       await this.http.put(`/v1/me/tracks`, {
-        ids: ids.slice(i, i + 50)
+        ids: chunkIds
       });
     }
   }
@@ -156,9 +156,9 @@ export class MeManager extends Manager {
    */
   async unsaveTracks(ids: string[]): Promise<void> {
     // Use an async loop to preserve the order of unsaves
-    for (let i = 0; i < ids.length; i += 50) {
+    for (const chunkIds of chunk(ids, 50)) {
       await this.http.delete(`/v1/me/tracks`, {
-        ids: ids.slice(i, i + 50)
+        ids: chunkIds
       });
     }
   }
