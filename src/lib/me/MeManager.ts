@@ -11,6 +11,7 @@ import {
   Markets,
   LibraryTrack
 } from '../../interfaces/Spotify';
+import { chunk } from '../../util/chunk';
 
 import { Manager } from '../Manager';
 
