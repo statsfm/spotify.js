@@ -11,6 +11,7 @@ import {
   Markets,
   LibraryTrack
 } from '../../interfaces/Spotify';
+import { chunk } from '../../util/chunk';
 
 import { Manager } from '../Manager';
 
@@ -142,9 +143,12 @@ export class MeManager extends Manager {
    * @param {string} ids Array of IDs.
    */
   async saveTracks(ids: string[]): Promise<void> {
-    await this.http.put(`/v1/me/tracks`, {
-      ids
-    });
+    // Use an async loop to preserve the order of saves
+    for (const chunkIds of chunk(ids, 50)) {
+      await this.http.put(`/v1/me/tracks`, {
+        ids: chunkIds
+      });
+    }
   }
 
   /**
@@ -152,9 +156,12 @@ export class MeManager extends Manager {
    * @param {string} ids Array of IDs.
    */
   async unsaveTracks(ids: string[]): Promise<void> {
-    await this.http.delete(`/v1/me/tracks`, {
-      query: { ids: ids.join(',') }
-    });
+    // Use an async loop to preserve the order of unsaves
+    for (const chunkIds of chunk(ids, 50)) {
+      await this.http.delete(`/v1/me/tracks`, {
+        ids: chunkIds
+      });
+    }
   }
 
   async playlists(options?: {
